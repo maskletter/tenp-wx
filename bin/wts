@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+'use strict';
+/**
+ * Next
+ *    typescript
+ *    assemblyscript
+ *    senecajs 
+ */
+
+var pack = require('../package.json');
+const { spawn } = require('child_process')
+const argv = process.argv.slice(2, process.argv.length);
+const readline = require('readline');
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+function run(){
+  try {
+
+    switch (argv[0]) {
+      case 'start':
+        spawn('node', ['node_modules/@tenp/wx/dist/ts-watch2/server.js'], {
+            cwd: process.cwd(),
+            stdio: 'inherit',
+            shell: true, 
+        });
+        break;
+      case 'init':
+        require('./init.js')(argv.slice(1, argv.length)[0])
+        break;
+      case 'v':
+      case 'i':
+      case 'V':
+      case 'version':
+        console.log('V: '+pack.version);
+        process.exit()
+        break;
+      default:
+        console.log([
+          '',
+          'options:',
+          '',
+          '  init [name]        创建项目',
+          '',
+          '  start              启动项目',
+          '',
+          '  ----------------------------------------------',
+          '',
+          '  email              通过邮箱反馈',
+          '',
+          '  ----------------------------------------------',
+          '',
+          '  -h / help          帮助列表',
+	  ''
+        ].join('\n'));
+        process.exit()
+        break;
+    }
+
+  } catch(e) {
+    
+    console.log(e)
+   
+  }
+
+}
+
+  
+
+run();

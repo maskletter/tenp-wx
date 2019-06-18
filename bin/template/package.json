@@ -1,0 +1,19 @@
+{
+  "name": "wx-ts-template",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/weixin-app": "^2.2.27",
+    "@tenp/wx": "^0.0.13"
+  },
+  "dependencies": {
+    "typescript": "^3.5.1",
+    "node-sass": "^4.12.0"
+  }
+}
