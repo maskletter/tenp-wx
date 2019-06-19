@@ -20,7 +20,7 @@ function isDirectory(str_path){
 
 function CopyFiles(str_path, callback){
 	if(process.platform === "win32"){
-		const _spwan = spawn('xcopy', ['/S','/d', path.join(__dirname,'template')+'\\*', str_path+'\\'], {
+		const _spwan = spawn('xcopy', ['/S','/d', path.join(__dirname,'template','*'), str_path], {
 			cwd: process.cwd(),
 	        stdio: 'inherit',
 	        shell: true, 
@@ -29,7 +29,9 @@ function CopyFiles(str_path, callback){
 			callback();
 		})
 	}else{
-		const _spwan = spawn('cp', ['/r', path.join(__dirname,'template')+'\\*', str_path+'\\'], {
+		//linux的cp命令没办法直接创建文件夹，所有需要手动创建
+		fs.mkdirSync(str_path)
+		const _spwan = spawn('cp', ['-r', path.join(__dirname,'template','*'), str_path], {
 			cwd: process.cwd(),
 	        stdio: 'inherit',
 	        shell: true, 
