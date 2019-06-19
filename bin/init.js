@@ -20,7 +20,7 @@ function isDirectory(str_path){
 
 function CopyFiles(str_path, callback){
 	if(process.platform === "win32"){
-		const _spwan = spawn('xcopy', ['/S','/d', path.join(__dirname,'template','*'), str_path], {
+		const _spwan = spawn('xcopy', ['/S','/d', path.join(__dirname,'template','*'), str_path+'\\'], {
 			cwd: process.cwd(),
 	        stdio: 'inherit',
 	        shell: true, 
@@ -64,7 +64,7 @@ function InitProject(name){
 		installDependencies(str_path, function(){
 			console.log('下载npm包完成')
 			console.log('$ cd '+name)
-			console.log('$ npm start');
+			console.log('$ wts serve');
 			process.exit();
 		})
 	})
