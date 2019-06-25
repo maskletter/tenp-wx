@@ -6,6 +6,9 @@ var fs = require("fs");
 var modify_ts_method_1 = require("./modify-ts-method");
 var tool_1 = require("./tool");
 require("./watch-assets");
+/**
+ * wts命令主服务，监听代码并转换成对应平台代码
+ */
 // https://astexplorer.net/
 var formatHost = {
     getCanonicalFileName: function (path) { return path; },

@@ -2,7 +2,10 @@
 import * as path from 'path';
 import * as chokidar from 'chokidar';
 import * as fs from 'fs';
-import * as ts from 'typescript';
+
+/**
+ * 监听assets目录，将assets目录内的文件复制到dist/assets目录中
+ */
 
 const cwd: string = process.cwd();
 const rootUrl: string = path.join(cwd,'assets');

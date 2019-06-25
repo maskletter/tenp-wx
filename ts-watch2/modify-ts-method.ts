@@ -4,10 +4,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import parse from './parse'
 import { isFiles } from './tool'
-import creationWx from './creation-wx';
+import creationWx from './wx/creation-wx';
 let Style_Plugin: Function[] = [];
 let Template_Plugin: Function[] = [];
 let Render_Plugin: Function;
+
+/**
+ * 将转换之后的代码写入磁盘中
+ */
 
 if(isFiles(path.join(process.cwd(),'wts.config.js'))){
     const module = require(path.join(process.cwd(),'wts.config.js'))||{};

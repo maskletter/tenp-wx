@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
+/**
+ * 一些工具
+ * @param str_path
+ */
 function isPresence(str_path) {
     return fs.existsSync(str_path);
 }

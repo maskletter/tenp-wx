@@ -6,6 +6,10 @@ import { writeFile } from './modify-ts-method';
 import { isDirectory } from './tool'
 import './watch-assets'
 
+/**
+ * wts命令主服务，监听代码并转换成对应平台代码
+ */
+
 // https://astexplorer.net/
 
 const formatHost: any = {

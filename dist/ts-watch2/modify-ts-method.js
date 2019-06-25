@@ -5,10 +5,13 @@ var fs = require("fs");
 var path = require("path");
 var parse_1 = require("./parse");
 var tool_1 = require("./tool");
-var creation_wx_1 = require("./creation-wx");
+var creation_wx_1 = require("./wx/creation-wx");
 var Style_Plugin = [];
 var Template_Plugin = [];
 var Render_Plugin;
+/**
+ * 将转换之后的代码写入磁盘中
+ */
 if (tool_1.isFiles(path.join(process.cwd(), 'wts.config.js'))) {
     var module_1 = require(path.join(process.cwd(), 'wts.config.js')) || {};
     if (module_1.style) {

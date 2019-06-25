@@ -6,6 +6,9 @@ var fs = require("fs");
 var escodegen = require('escodegen');
 var cwd = process.cwd();
 var global_config_1 = require("../global.config");
+/**
+ * 将js代码转为ast树
+ */
 exports.default = (function (content) {
     // console.log(content)
     var defaultClassName = '';

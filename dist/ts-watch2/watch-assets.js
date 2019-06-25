@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var path = require("path");
 var chokidar = require("chokidar");
 var fs = require("fs");
+/**
+ * 监听assets目录，将assets目录内的文件复制到dist/assets目录中
+ */
 var cwd = process.cwd();
 var rootUrl = path.join(cwd, 'assets');
 var wxUrl = path.join(cwd, 'dist', 'assets');

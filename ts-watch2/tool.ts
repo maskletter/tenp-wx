@@ -1,6 +1,11 @@
 
 import * as fs from 'fs';
 
+/**
+ * 一些工具
+ * @param str_path 
+ */
+
 export function isPresence(str_path: string){
 	return fs.existsSync(str_path);
 }

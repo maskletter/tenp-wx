@@ -21,7 +21,7 @@ function run(){
   try {
 
     switch (argv[0]) {
-      case 'start':
+      case 'serve':
         spawn('node', ['node_modules/@tenp/wx/dist/ts-watch2/server.js'], {
             cwd: process.cwd(),
             stdio: 'inherit',
@@ -45,7 +45,7 @@ function run(){
           '',
           '  init [name]        创建项目',
           '',
-          '  start              启动项目',
+          '  serve              启动项目',
           '',
           '  ----------------------------------------------',
           '',

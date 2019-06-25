@@ -9,6 +9,7 @@ function isPresence(str_path){
 	return fs.existsSync(str_path);
 }
 
+//判断是否为目录
 function isDirectory(str_path){
 	if(!isPresence(str_path)){
 		return false;
@@ -18,6 +19,7 @@ function isDirectory(str_path){
 	}
 }
 
+//创建项目基础目录
 function CopyFiles(str_path, callback){
 	if(process.platform === "win32"){
 		const _spwan = spawn('xcopy', ['/S','/d', path.join(__dirname,'template','*'), str_path+'\\'], {
@@ -42,6 +44,7 @@ function CopyFiles(str_path, callback){
 	}
 }
 
+//安装npm包
 function installDependencies( url, callback) {
 
  	const spwan = spawn(npm_cmd, ['install'], {
@@ -52,11 +55,11 @@ function installDependencies( url, callback) {
     spwan.on('exit', callback)
 }
 
-
+//初始化创建程序
 function InitProject(name){
 
 	const str_path = path.join(cwd,name);
-	console.log(str_path)
+	
 	if(isDirectory(str_path)) 
 		return console.log(' $error: 项目目录已存在');
 	

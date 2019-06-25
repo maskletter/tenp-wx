@@ -30,10 +30,28 @@ import { Loading } from '../component/loading.component'
     
     `,
     style: `
-        page{ width:100%;height:100%; }
-        .welcome-container{ height:100%;display:flex;align-items:flex-end;justify-content:center;padding-bottom:300rpx;box-sizing:border-box; }
-        .title-container{ text-align:center;color:#fff;position:relative; }
+        $full: null;
+        $full: 100% !default;
 
+        @mixin boxFill($selector: null){
+
+            @if $selector {
+                #{$selector}{ width:$full;height:$full; }   
+            } @else {
+                width:$full;height:$full;
+            }
+        }
+
+        @mixin flexCenter{
+            display:flex;align-items:flex-end;justify-content:center;
+        }
+
+        page{ @include boxFill;
+            .welcome-container{ height:$full;@include flexCenter;padding-bottom:300rpx;box-sizing:border-box; }
+            .title-container{ color:#fff;position:relative; 
+                text:{ align:center; }
+            }
+        }
 
     `,
     navigationBarBackgroundColor: 'white',

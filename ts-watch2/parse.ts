@@ -6,6 +6,10 @@ const escodegen = require('escodegen');
 const cwd: string = process.cwd();
 import { Final_System_Attr, Final_System_attrData, toValueFunction } from '../global.config';
 
+/**
+ * 将js代码转为ast树
+ */
+
 export default (content: string): any[] => {
 // console.log(content)
 	let defaultClassName = '';
