@@ -1,6 +1,6 @@
 {
   "name": "@tenp/wx",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "",
   "bin": {
     "wts": "./bin/wts"

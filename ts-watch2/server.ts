@@ -85,6 +85,15 @@ function tsWatch(process_server: any, error: any){
           process_server();
         }
     };
+    // setTimeout(function(){
+      
+    //   host.watchFile('C:\\资源\\文档\\git\\小程序js模板语法\\src\\app.ts', function(){
+    //     console.log('监听')
+    //   })
+    //   // host.createProgram(['C:\\资源\\文档\\git\\小程序js模板语法\\src\\app.ts'], {});
+    //   console.log('---')
+    // },4000)
+    
     // `createWatchProgram` creates an initial program, watches files, and updates
     // the program over time.
     // ts.createWatchProgram(host);

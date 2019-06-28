@@ -18,12 +18,13 @@ export default (data: any) => {
     function createWxml(element: any[]){
 
 		element.forEach(value => {
-			const label = FormatLabel(value.label);
-			
-			if(label == 'text' && value.isCreate == false){
-				wxml += value.text;
-				return ;
+			if(!value.label){
+				wxml += value;
+				return;
 			}
+
+			const label = FormatLabel(value.label);
+
 
 			wxml += '<'+label;
 			const attr = value.attr || {};

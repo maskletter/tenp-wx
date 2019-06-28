@@ -121,6 +121,10 @@ export const Watch = function(option: { type?: 'get'|'set', name: string }): any
 
 }
 
+export const Filter = function(): any{
+
+}
+
 
 export const ImgToBase64 = function(src: string): any {
 

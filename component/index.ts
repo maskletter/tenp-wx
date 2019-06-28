@@ -8,7 +8,8 @@ export interface CommonParams{
     /**
      * 设置元素的传值
      * data: { name: "testName" }
-     * => <view name='{{testName}}'></view>
+     * 
+     *  => <view name='{{testName}}'></view>
      */
     data?: {
         [prop: string]: string|number|boolean
@@ -20,7 +21,8 @@ export interface CommonParams{
     /**
      * 设置元素的data-*属性
      * attr: { name: "testName" }
-     * => <view name='testName'></view>
+     * 
+     *  => <view name='testName'></view>
      */
     attr?: {
         [prop: string]: string|number|boolean
@@ -37,7 +39,8 @@ export interface CommonParams{
     /**
      * 设置元素的catch事件
      * event: { tap: "testTap" }
-     * => <view catchtap='testTap'></view>
+     * 
+     *  => <view catchtap='testTap'></view>
      */
     catch?: {
         [prop: string]: string
@@ -192,10 +195,11 @@ export namespace params{
     }
     export interface TextParams extends CommonParams{
         text: string
-        /**
-         * 是否创建为text标签，默认true
-         */
-        isCreate?: boolean
+     
+    }
+    export interface WxsParams extends BlockCommonParams{
+        module: string
+        src?: string
     }
     export interface ImageParams extends CommonParams{
         src?: string
@@ -676,6 +680,7 @@ export function View(params: params.ViewParams){}
 export function ScrollView(params: params.ScrollViewParams){}
 export function Text(params: params.TextParams){}
 export function Image(params: params.ImageParams){}
+export function Wxs(params: params.WxsParams){}
 export function Swiper(params: params.SwiperParams){}
 export function SwiperItem(params: params.SwiperItemParams){}
 export function Navigator(params: params.NavigatorParams){}

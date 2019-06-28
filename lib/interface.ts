@@ -47,8 +47,8 @@ namespace tenp{
 		permission?: any
 	}
 	export interface PageConfig{
-		template?: any[]
-		templateStr?: string
+		render?: any[]
+		template?: string
 		style?: string[]|string
 		components?: {}
 		/**
@@ -119,8 +119,8 @@ namespace tenp{
 		disableSwipeBack?: boolean
 	}
 	export interface ComponentConfig {
-		template?: any[]
-		templateStr?: string
+		render?: any[]
+		template?: string
         style?: string[]|string,
         components?: {}
 	}

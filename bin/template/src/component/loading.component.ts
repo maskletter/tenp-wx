@@ -3,7 +3,7 @@ import { View, Text, CommonParams } from '@tenp/wx/component'
 import tenp from '@tenp/wx'
 
 @Component({
-    template: [
+    render: [
         View({
             class: 'loadEffect',
             child: [
@@ -18,9 +18,6 @@ import tenp from '@tenp/wx'
             ]
         })
     ],
-    templateStr: `
-    
-    `,
     style: `
         .loadEffect{
             width: 100px;

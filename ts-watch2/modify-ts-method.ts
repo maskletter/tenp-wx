@@ -5,6 +5,7 @@ import * as path from 'path';
 import parse from './parse'
 import { isFiles } from './tool'
 import creationWx from './wx/creation-wx';
+import { setSystemDataAttr } from '../global.config'
 let Style_Plugin: Function[] = [];
 let Template_Plugin: Function[] = [];
 let Render_Plugin: Function;
@@ -23,6 +24,11 @@ if(isFiles(path.join(process.cwd(),'wts.config.js'))){
     }
     if(module.parse){
         Render_Plugin = module.parse;
+    }
+    if(module.SystemDataAttr){
+        for(let key in module.SystemDataAttr){
+            setSystemDataAttr(key, module.SystemDataAttr[key]);
+        }
     }
 }
 
@@ -61,12 +67,19 @@ ts.sys.writeFile = function(fileName: string, data: any, writeByteOrderMark: any
       var fd,fd_wxml, fd_wxss, fd_json;
       const url = path.dirname(fileName);
       const _Name = path.basename(fileName,'.js');
-      
+ 
+
       const wxData: any = Render_Plugin ? Render_Plugin(data, parse(data)): creationWx(data, parse(data));
-    //   Render_Plugin && Render_Plugin(data, parse(data))
+      
+
       try {
         fd = writeFile(fileName, fd, wxData.js);
-        if(wxData.wxml) fd_wxml = writeFile(path.join(url,_Name+'.wxml'),fd_wxml,getFinalResults('template',wxData.wxml,fileName))
+        if(wxData.wxml) {
+            fd_wxml = writeFile(path.join(url,_Name+'.wxml'),fd_wxml,getFinalResults('template',wxData.wxml.replace(/{{(.+?)\|(.+?)}}/g, function(a:string,b:string,c:string){
+                const fun = c.split(':');
+                return `{{${fun.shift()}(${b}${fun.length?',':''}${fun.join(',')})}}`
+              }),fileName))
+        }
         if(wxData.wxss) fd_wxss = writeFile(path.join(url,_Name+'.wxss'),fd_wxss,getFinalResults('style',wxData.wxss,fileName))
         if(wxData.json) fd_json = writeFile(path.join(url,_Name+'.json'),fd_json,wxData.json)  
       }

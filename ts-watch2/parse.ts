@@ -4,14 +4,15 @@ import * as path from 'path'
 import * as fs from 'fs'
 const escodegen = require('escodegen');
 const cwd: string = process.cwd();
-import { Final_System_Attr, Final_System_attrData, toValueFunction } from '../global.config';
-
+import { Final_System_Attr, toValueFunction } from '../global.config';
+let Final_System_attrData: any;
 /**
  * 将js代码转为ast树
  */
 
 export default (content: string): any[] => {
-// console.log(content)
+	if(!Final_System_attrData) Final_System_attrData = require('../global.config').Final_System_attrData
+
 	let defaultClassName = '';
 	content.replace(/exports.default = (.+?)\;/g, function(a: string,_defaultClassName: string){
 		defaultClassName = _defaultClassName;
@@ -131,8 +132,8 @@ export default (content: string): any[] => {
                 let config: any = {};
                 tree.forEach((data: any) => {
 					
-                    if(data.key.name == 'template'){
-                        const template = tree.find((v: any) => v.key.name == 'template');
+                    if(data.key.name == 'render'){
+                        const template = tree.find((v: any) => v.key.name == 'render');
                         let treeArray: any[] = [];
                         formatTree(template.value.elements, treeArray);
                         wxTree.push({
@@ -164,6 +165,9 @@ export default (content: string): any[] => {
 	
     function formatTree(elements: any[], treeArray: any[]){
         elements.forEach((data) => {
+			if(!data.callee){
+				return treeArray.push(data.value);
+			}
 			let {name: label} = data.callee.property;
 			let  _treeArray: any = { label: label };
 			
@@ -171,7 +175,9 @@ export default (content: string): any[] => {
                 
                 if(_d1.key.name != "child"){
 					
-                    if(_d1.value.raw){
+					if(Final_System_attrData[label]&&Final_System_attrData[label].indexOf(_d1.key.name) != -1){
+						_treeArray[_d1.key.name] = '{{'+escodegen.generate(_d1.value).replace(/[\r\n]/g,'')+'}}';
+					}else if(_d1.value.raw){
                         _treeArray[_d1.key.name] = _d1.value.value;
                     }else if(Final_System_Attr.indexOf(_d1.key.name) != -1){
                         let __data: any = {};
@@ -180,9 +186,7 @@ export default (content: string): any[] => {
                         })
                         _treeArray[_d1.key.name] = __data;
                     }else{
-						if(Final_System_attrData[label]&&Final_System_attrData[label].indexOf(_d1.key.name) != -1){
-							_treeArray[_d1.key.name] = '{{'+escodegen.generate(_d1.value).replace(/[\r\n]/g,'')+'}}';
-						}
+				
 						
 					}
                     

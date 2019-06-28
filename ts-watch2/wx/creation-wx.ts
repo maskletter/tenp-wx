@@ -257,9 +257,10 @@ function createPage(data: any,tenp:any){
 }
 
 function createApp(data: any, tenp:any){
-    let template: string = "const tenp = require('./method.js');wx.tenp = tenp;"+Global_Template;
+    let template: string = `const ${tenp.name} = {default:require('./method.js')};wx.tenp = ${tenp.name}.default;`+Global_Template;
     let functionValue: any = {};
     let config: any = {};
+    const libName: string = tenp.name;
     let components = {};
     let dataKey: string[] = [];
     data.forEach((value: any) => {
@@ -275,7 +276,7 @@ function createApp(data: any, tenp:any){
         }
     })
 
-    functionValue.methods.push({ key: 'tenp', value: 'tenp' })
+    functionValue.methods.push({ key: 'tenp', value: libName })
 
     //添加data参数
     const _data = 'const _pageData = {' +functionValue.data.map((data: any) => {

@@ -5,7 +5,7 @@ import { Loading } from '../component/loading.component'
 
 
 @Page({
-    template: [
+    render: [
         View({
             child: [
           
@@ -26,7 +26,7 @@ import { Loading } from '../component/loading.component'
             style: 'background:url({{imgBase64}}) center / cover'
         }),
     ],
-    templateStr: `
+    template: `
     
     `,
     style: `
