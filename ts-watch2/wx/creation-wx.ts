@@ -85,7 +85,7 @@ function createComponent(data: any,tenp: any){
             tenp = value.value;
         }else if(value.type == 'config'){
             config = value.value;
-            wxml = value.value.templateStr;
+            wxml = value.value.template;
             components = config.components||{};
         }else if(value.type == 'tree'){
             tree = value.value;
@@ -195,7 +195,7 @@ function createPage(data: any,tenp:any){
             tenp = value.value;
         }else if(value.type == 'config'){
             config = value.value;
-            wxml = value.value.templateStr;
+            wxml = value.value.template;
             components = config.components||{};
         }else if(value.type == 'tree'){
             tree = value.value;
