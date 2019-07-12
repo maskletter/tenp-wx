@@ -16,7 +16,6 @@ function FormatLabel(name: string){
 export default (data: any) => {
     let wxml = '';
     function createWxml(element: any[]){
-
 		element.forEach(value => {
 			if(!value.label){
 				wxml += value;

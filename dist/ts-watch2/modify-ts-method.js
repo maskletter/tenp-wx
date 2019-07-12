@@ -3,9 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ts = require("typescript");
 var fs = require("fs");
 var path = require("path");
-var parse_1 = require("./parse");
 var tool_1 = require("./tool");
-var creation_wx_1 = require("./wx/creation-wx");
+var white_1 = require("./wx/white");
+var white_2 = require("./web/white");
+var global_config_1 = require("../global.config");
 var Style_Plugin = [];
 var Template_Plugin = [];
 var Render_Plugin;
@@ -23,6 +24,11 @@ if (tool_1.isFiles(path.join(process.cwd(), 'wts.config.js'))) {
     if (module_1.parse) {
         Render_Plugin = module_1.parse;
     }
+    if (module_1.SystemDataAttr) {
+        for (var key in module_1.SystemDataAttr) {
+            global_config_1.setSystemDataAttr(key, module_1.SystemDataAttr[key]);
+        }
+    }
 }
 function splitFile(fileName, content) {
     return content;
@@ -31,51 +37,22 @@ function getFinalResults(type, value, fileName) {
     var plugin = type == 'template' ? Template_Plugin : Style_Plugin;
     var __value = value;
     plugin.forEach(function (data) {
-        __value = data(__value, path.dirname(fileName));
+        __value = data(__value, fileName);
     });
     return __value;
 }
-function writeFile(fileName, fd, data) {
-    fd = fs.openSync(fileName, "w");
-    fs.writeSync(fd, data || '', /*position*/ undefined, "utf8");
-    return fd;
-}
-exports.writeFile = writeFile;
+exports.getFinalResults = getFinalResults;
 ts.sys.writeFile = function (fileName, data, writeByteOrderMark) {
     // If a BOM is required, emit one
     if (writeByteOrderMark) {
         // data = byteOrderMarkIndicator + data;
     }
-    var fd, fd_wxml, fd_wxss, fd_json;
-    var url = path.dirname(fileName);
-    var _Name = path.basename(fileName, '.js');
-    var wxData = Render_Plugin ? Render_Plugin(data, parse_1.default(data)) : creation_wx_1.default(data, parse_1.default(data));
-    //   Render_Plugin && Render_Plugin(data, parse(data))
-    try {
-        fd = writeFile(fileName, fd, wxData.js);
-        if (wxData.wxml)
-            fd_wxml = writeFile(path.join(url, _Name + '.wxml'), fd_wxml, getFinalResults('template', wxData.wxml, fileName));
-        if (wxData.wxss)
-            fd_wxss = writeFile(path.join(url, _Name + '.wxss'), fd_wxss, getFinalResults('style', wxData.wxss, fileName));
-        if (wxData.json)
-            fd_json = writeFile(path.join(url, _Name + '.json'), fd_json, wxData.json);
+    //   const wxData: any = Render_Plugin ? Render_Plugin(data, parse(data)): creationWx(data, parse(data));
+    if (process.argv.indexOf('--wx') != -1) {
+        white_1.default(fileName, data);
     }
-    catch (e) {
-        console.log(e);
-    }
-    finally {
-        if (fd !== undefined) {
-            fs.closeSync(fd);
-        }
-        if (fd_wxml !== undefined) {
-            fs.closeSync(fd_wxml);
-        }
-        if (fd_wxss !== undefined) {
-            fs.closeSync(fd_wxss);
-        }
-        if (fd_json !== undefined) {
-            fs.closeSync(fd_json);
-        }
+    else if (process.argv.indexOf('--web') != -1) {
+        white_2.default(fileName, data);
     }
 };
 ts.sys.readFile = function (fileName, _encoding) {

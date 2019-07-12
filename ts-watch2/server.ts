@@ -1,9 +1,8 @@
 import * as ts from 'typescript';
-
+import './modify-ts-method'
 import * as path from 'path';
 import * as fs from 'fs';
-import { writeFile } from './modify-ts-method';
-import { isDirectory } from './tool'
+import { isDirectory, copyFile } from './tool'
 import './watch-assets'
 
 /**
@@ -43,7 +42,7 @@ function tsWatch(process_server: any, error: any){
     var origCreateProgram = host.createProgram;
     var createProgramConfig: any = {};
     host.createProgram = function (rootNames: any, options: any, host: any, oldProgram: any) {
-        process.stdout.write(process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H')
+        // process.stdout.write(process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H')
         console.log("** 即将开始typescript文件监听! **");
         CompileError = false;
         createProgramConfig = { rootNames, options, host, oldProgram };
@@ -55,15 +54,12 @@ function tsWatch(process_server: any, error: any){
     if(!isDirectory(path.join(process.cwd(),'dist'))){
       fs.mkdirSync(path.join(process.cwd(),'dist'));
     }
-    let fd;
-      fd = writeFile(path.join(process.cwd(),'dist','project.config.json'), fd, ts.sys.readFile(wxConfigJsonPath));
-      fs.closeSync(fd);
-    let fd2;
-      fd2 = writeFile(path.join(process.cwd(),'dist','sitemap.json'), fd2, ts.sys.readFile(wxSitemapJsonPath));
-      fs.closeSync(fd2);
-    let fd3;
-      fd3 = writeFile(path.join(process.cwd(),'dist','method.js'), fd3, ts.sys.readFile(path.join(__dirname,'../../bin/template-method.js')));
-      fs.closeSync(fd3);
+
+    //创建小程序所需文件
+    // copyFile(path.join(process.cwd(),'dist','project.config.json'), ts.sys.readFile(wxConfigJsonPath))
+    // copyFile(path.join(process.cwd(),'dist','sitemap.json'), ts.sys.readFile(wxSitemapJsonPath));
+    copyFile(path.join(process.cwd(),'dist','method.js'), ts.sys.readFile(path.join(__dirname,'../../bin/template-method.js')));
+    
     // const watcher = chokidar.watch([path.join(process.cwd(),'src'),wxConfigJsonPath], {
     //   ignored: /^(\s|\S)+(ts|js|tsx|jsx)+$/,
     //   persistent: true

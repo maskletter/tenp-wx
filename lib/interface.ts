@@ -50,6 +50,7 @@ namespace tenp{
 		render?: any[]
 		template?: string
 		style?: string[]|string
+		filters?: Function[],
 		components?: {}
 		/**
 		 * 导航栏背景颜色，如 #000000
@@ -121,6 +122,7 @@ namespace tenp{
 	export interface ComponentConfig {
 		render?: any[]
 		template?: string
+		filters?: Function[],
         style?: string[]|string,
         components?: {}
 	}

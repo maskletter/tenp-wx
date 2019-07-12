@@ -6,11 +6,13 @@ var fs = require("fs");
 var escodegen = require('escodegen');
 var cwd = process.cwd();
 var global_config_1 = require("../global.config");
+var Final_System_attrData;
 /**
  * 将js代码转为ast树
  */
 exports.default = (function (content) {
-    // console.log(content)
+    if (!Final_System_attrData)
+        Final_System_attrData = require('../global.config').Final_System_attrData;
     var defaultClassName = '';
     content.replace(/exports.default = (.+?)\;/g, function (a, _defaultClassName) {
         defaultClassName = _defaultClassName;
@@ -133,8 +135,8 @@ exports.default = (function (content) {
                 var tree_1 = data.expression.right.arguments[0].elements[0].arguments[0].properties;
                 var config_1 = {};
                 tree_1.forEach(function (data) {
-                    if (data.key.name == 'template') {
-                        var template = tree_1.find(function (v) { return v.key.name == 'template'; });
+                    if (data.key.name == 'render') {
+                        var template = tree_1.find(function (v) { return v.key.name == 'render'; });
                         var treeArray = [];
                         formatTree(template.value.elements, treeArray);
                         wxTree.push({
@@ -167,11 +169,17 @@ exports.default = (function (content) {
     }
     function formatTree(elements, treeArray) {
         elements.forEach(function (data) {
+            if (!data.callee) {
+                return treeArray.push(data.value);
+            }
             var label = data.callee.property.name;
             var _treeArray = { label: label };
             data.arguments[0] && data.arguments[0].properties.forEach(function (_d1) {
                 if (_d1.key.name != "child") {
-                    if (_d1.value.raw) {
+                    if (Final_System_attrData[label] && Final_System_attrData[label].indexOf(_d1.key.name) != -1) {
+                        _treeArray[_d1.key.name] = '{{' + escodegen.generate(_d1.value).replace(/[\r\n]/g, '') + '}}';
+                    }
+                    else if (_d1.value.raw) {
                         _treeArray[_d1.key.name] = _d1.value.value;
                     }
                     else if (global_config_1.Final_System_Attr.indexOf(_d1.key.name) != -1) {
@@ -182,9 +190,6 @@ exports.default = (function (content) {
                         _treeArray[_d1.key.name] = __data_1;
                     }
                     else {
-                        if (global_config_1.Final_System_attrData[label] && global_config_1.Final_System_attrData[label].indexOf(_d1.key.name) != -1) {
-                            _treeArray[_d1.key.name] = '{{' + escodegen.generate(_d1.value).replace(/[\r\n]/g, '') + '}}';
-                        }
                     }
                 }
                 else {

@@ -54,9 +54,10 @@ declare namespace tenp {
         permission?: any;
     }
     interface PageConfig {
-        template?: any[];
-        templateStr?: string;
+        render?: any[];
+        template?: string;
         style?: string[] | string;
+        filters?: Function[];
         components?: {};
         /**
          * 导航栏背景颜色，如 #000000
@@ -126,8 +127,9 @@ declare namespace tenp {
         disableSwipeBack?: boolean;
     }
     interface ComponentConfig {
-        template?: any[];
-        templateStr?: string;
+        render?: any[];
+        template?: string;
+        filters?: Function[];
         style?: string[] | string;
         components?: {};
     }
@@ -656,7 +658,11 @@ declare namespace tenp {
         size: number;
         digest: string;
     }>;
-    /**调用接口获取登录凭证（code）。通过凭证进而换取用户登录态信息，包括用户的唯一标识（openid）及本次登录的会话密钥（session_key）等。用户数据的加解密通讯需要依赖会话密钥完成。更多使用方法详见 小程序登录 */
+    /**调用接口获取登录凭证（code）。
+     *
+     * 通过凭证进而换取用户登录态信息，包括用户的唯一标识（openid）及本次登录的会话密钥（session_key）等。
+     *
+     * 用户数据的加解密通讯需要依赖会话密钥完成。更多使用方法详见 [小程序登录](https://developers.weixin.qq.com/miniprogram/dev/dev_wxwork/dev-doc/qywx-api/login.html) */
     let login: (params?: {
         timeout?: number;
     }) => Promise<{
@@ -728,7 +734,7 @@ declare namespace tenp {
      * @version 1.2.0
      * */
     let authorize: (params: {
-        scope: string;
+        scope: 'scope.userInfo' | 'scope.userLocation' | 'scope.address' | 'scope.invoiceTitle' | 'scope.invoice' | 'scope.werun' | 'scope.record' | 'scope.writePhotosAlbum' | 'scope.camera';
     }) => Promise<any>;
     interface AuthSetting {
         /**是否授权用户信息，对应接口 [wx.getUserInfo](https://developers.weixin.qq.com/miniprogram/dev/api/open-api/user-info/wx.getUserInfo.html) */

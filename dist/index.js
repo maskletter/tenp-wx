@@ -25,7 +25,11 @@ exports.App = function (config) {
 };
 exports.Input = function (defaultValue) {
 };
+exports.Wxml = function (defaultValue) {
+};
 exports.Watch = function (option) {
+};
+exports.Filter = function (name) {
 };
 exports.ImgToBase64 = function (src) {
 };

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var path = require("path");
 var jsdomTotemplate_1 = require("./jsdomTotemplate");
 var global_config_1 = require("../../global.config");
 /**
@@ -35,14 +36,48 @@ exports.default = (function (content, data) {
         return { js: content.replace(/require\("@tenp\/wx"\)/, "{ default: wx.tenp }") };
     }
 });
+//判断当前组件或者页面是否引用了组件的js
+function hasCurrentComponent(url, components) {
+    var is = false;
+    components.forEach(function (data) {
+        if (data.indexOf(url) != -1) {
+            is = true;
+        }
+    });
+    return is;
+}
+//转换方法内this对象
+function transThis(data, propertiesKey, dataKey) {
+    var b = null;
+    data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function (a, b, c) {
+        if (propertiesKey.concat(dataKey).indexOf(b) != -1) {
+            return "targetWithLog." + b + a.substr(-1);
+        }
+        else {
+            return a;
+        }
+    }).replace(/var[\s](.+?) =[\s]this\b/, function (a, _b) {
+        b = _b;
+        return a;
+    }).replace(new RegExp('\\b' + b + '.(.+?) =', 'g'), function (a, b) {
+        if (dataKey.indexOf(b) != -1) {
+            return "targetWithLog." + b + a.substr(-1);
+        }
+        else {
+            return a;
+        }
+    });
+    return data;
+}
 function createComponent(data, tenp) {
     // let template: string = `const ${tenp.name} = { default: getApp().tenp };`+Global_Template;
     var template = "const " + tenp.name + " = { default: wx.tenp };" + Global_Template;
     var functionValue = {};
     var tree = [];
-    var wxml = '';
-    var config = {};
-    var components = {};
+    var config = data.find(function (v) { return v.type == 'config'; }).value;
+    var wxml = config.template || '';
+    var components = config.components || {};
+    var componentsValue = Object.values(components);
     var dataKey = [], propertiesKey = [], options = '', relations = '';
     data.forEach(function (value) {
         if (value.type == 'text') {
@@ -52,6 +87,9 @@ function createComponent(data, tenp) {
             functionValue = value;
         }
         else if (value.type == 'require') {
+            if (value.value.substr(0, 5) != '@tenp' && !hasCurrentComponent(path.basename(value.value), componentsValue)) {
+                template += "const " + value.name + " = require(\"" + value.value + "\");";
+            }
             tenp = value.value;
         }
         else if (value.type == 'config') {
@@ -97,9 +135,21 @@ function createComponent(data, tenp) {
     }
     //筛选事件方法并添加进去
     var _methods = exports.FormatMethods2('Component', functionValue.methods.map(function (data) {
+        var b = null;
+        var datas = propertiesKey.concat(dataKey);
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function (a, b, c) {
-            if (propertiesKey.concat(dataKey).indexOf(b) != -1) {
+            if (datas.indexOf(b) != -1) {
                 return "targetWithLog." + b + a.substr(-1);
+            }
+            else {
+                return a;
+            }
+        }).replace(/var[\s](.+?) =[\s]this\b/, function (a, _b) {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b' + b + '.(.+?)\\b', 'g'), function (a, b) {
+            if (datas.indexOf(b) != -1) {
+                return "targetWithLog." + b;
             }
             else {
                 return a;
@@ -139,7 +189,7 @@ function createComponent(data, tenp) {
         wxml: tree.length ? jsdomTotemplate_1.default(tree) : wxml,
         wxss: config.style,
         js: template,
-        json: exports.ClearOtherConfig(['style', 'template', 'components', 'templateStr'], config)
+        json: exports.ClearOtherConfig(['style', 'template', 'components'], config)
     };
 }
 function createPage(data, tenp) {
@@ -147,9 +197,10 @@ function createPage(data, tenp) {
     var template = "const " + tenp.name + " = { default: wx.tenp };" + Global_Template;
     var functionValue = {};
     var tree = [];
-    var wxml = '';
-    var config = {};
-    var components = {};
+    var config = data.find(function (v) { return v.type == 'config'; }).value;
+    var wxml = config.template || '';
+    var components = config.components || {};
+    var componentsValue = Object.values(components);
     var dataKey = [];
     data.forEach(function (value) {
         if (value.type == 'text') {
@@ -159,12 +210,15 @@ function createPage(data, tenp) {
             functionValue = value;
         }
         else if (value.type == 'require') {
+            if (value.value.substr(0, 5) != '@tenp' && !hasCurrentComponent(path.basename(value.value), componentsValue)) {
+                template += "const " + value.name + " = require(\"" + value.value + "\");";
+            }
             tenp = value.value;
         }
         else if (value.type == 'config') {
-            config = value.value;
-            wxml = value.value.template;
-            components = config.components || {};
+            // config = value.value;
+            // wxml = value.value.template;
+            // components = config.components||{};
         }
         else if (value.type == 'tree') {
             tree = value.value;
@@ -190,7 +244,18 @@ function createPage(data, tenp) {
     }
     //筛选事件方法并添加进去
     var _methods = exports.FormatMethods2('Page', functionValue.methods.map(function (data) {
+        var b = null;
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function (a, b, c) {
+            if (dataKey.indexOf(b) != -1) {
+                return "targetWithLog." + b + a.substr(-1);
+            }
+            else {
+                return a;
+            }
+        }).replace(/var[\s](.+?) =[\s]this\b/, function (a, _b) {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b' + b + '.(.+?) =', 'g'), function (a, b) {
             if (dataKey.indexOf(b) != -1) {
                 return "targetWithLog." + b + a.substr(-1);
             }
@@ -218,13 +283,14 @@ function createPage(data, tenp) {
         wxml: tree.length ? jsdomTotemplate_1.default(tree) : wxml,
         wxss: config.style,
         js: template,
-        json: exports.ClearOtherConfig(['style', 'template', 'components', 'templateStr'], config)
+        json: exports.ClearOtherConfig(['style', 'template', 'components'], config)
     };
 }
 function createApp(data, tenp) {
-    var template = "const tenp = require('./method.js');wx.tenp = tenp;" + Global_Template;
+    var template = "const " + tenp.name + " = {default:require('./method.js')};wx.tenp = " + tenp.name + ".default;" + Global_Template;
     var functionValue = {};
     var config = {};
+    var libName = tenp.name;
     var components = {};
     var dataKey = [];
     data.forEach(function (value) {
@@ -235,6 +301,9 @@ function createApp(data, tenp) {
             functionValue = value;
         }
         else if (value.type == 'require') {
+            if (value.value.substr(0, 5) != '@tenp') {
+                template += "const " + value.name + " = require(\"" + value.value + "\");";
+            }
             tenp = value.value;
         }
         else if (value.type == 'config') {
@@ -242,7 +311,7 @@ function createApp(data, tenp) {
             components = config.components || {};
         }
     });
-    functionValue.methods.push({ key: 'tenp', value: 'tenp' });
+    functionValue.methods.push({ key: 'tenp', value: libName });
     //添加data参数
     var _data = 'const _pageData = {' + functionValue.data.map(function (data) {
         if (global_config_1.Keyword_Proto.indexOf(data.key) != -1)
@@ -263,7 +332,18 @@ function createApp(data, tenp) {
     }
     //筛选事件方法并添加进去
     var _methods = exports.FormatMethods2('App', functionValue.methods.map(function (data) {
+        var b = null;
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function (a, b, c) {
+            if (dataKey.indexOf(b) != -1) {
+                return "targetWithLog." + b + a.substr(-1);
+            }
+            else {
+                return a;
+            }
+        }).replace(/var[\s](.+?) =[\s]this\b/, function (a, _b) {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b' + b + '.(.+?) =', 'g'), function (a, b) {
             if (dataKey.indexOf(b) != -1) {
                 return "targetWithLog." + b + a.substr(-1);
             }

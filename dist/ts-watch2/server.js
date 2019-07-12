@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var ts = require("typescript");
+require("./modify-ts-method");
 var path = require("path");
 var fs = require("fs");
-var modify_ts_method_1 = require("./modify-ts-method");
 var tool_1 = require("./tool");
 require("./watch-assets");
 /**
@@ -33,7 +33,7 @@ function tsWatch(process_server, error) {
     var origCreateProgram = host.createProgram;
     var createProgramConfig = {};
     host.createProgram = function (rootNames, options, host, oldProgram) {
-        process.stdout.write(process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H');
+        // process.stdout.write(process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H')
         console.log("** 即将开始typescript文件监听! **");
         CompileError = false;
         createProgramConfig = { rootNames: rootNames, options: options, host: host, oldProgram: oldProgram };
@@ -44,15 +44,10 @@ function tsWatch(process_server, error) {
     if (!tool_1.isDirectory(path.join(process.cwd(), 'dist'))) {
         fs.mkdirSync(path.join(process.cwd(), 'dist'));
     }
-    var fd;
-    fd = modify_ts_method_1.writeFile(path.join(process.cwd(), 'dist', 'project.config.json'), fd, ts.sys.readFile(wxConfigJsonPath));
-    fs.closeSync(fd);
-    var fd2;
-    fd2 = modify_ts_method_1.writeFile(path.join(process.cwd(), 'dist', 'sitemap.json'), fd2, ts.sys.readFile(wxSitemapJsonPath));
-    fs.closeSync(fd2);
-    var fd3;
-    fd3 = modify_ts_method_1.writeFile(path.join(process.cwd(), 'dist', 'method.js'), fd3, ts.sys.readFile(path.join(__dirname, '../../bin/template-method.js')));
-    fs.closeSync(fd3);
+    //创建小程序所需文件
+    // copyFile(path.join(process.cwd(),'dist','project.config.json'), ts.sys.readFile(wxConfigJsonPath))
+    // copyFile(path.join(process.cwd(),'dist','sitemap.json'), ts.sys.readFile(wxSitemapJsonPath));
+    tool_1.copyFile(path.join(process.cwd(), 'dist', 'method.js'), ts.sys.readFile(path.join(__dirname, '../../bin/template-method.js')));
     // const watcher = chokidar.watch([path.join(process.cwd(),'src'),wxConfigJsonPath], {
     //   ignored: /^(\s|\S)+(ts|js|tsx|jsx)+$/,
     //   persistent: true
@@ -72,6 +67,13 @@ function tsWatch(process_server, error) {
             process_server();
         }
     };
+    // setTimeout(function(){
+    //   host.watchFile('C:\\资源\\文档\\git\\小程序js模板语法\\src\\app.ts', function(){
+    //     console.log('监听')
+    //   })
+    //   // host.createProgram(['C:\\资源\\文档\\git\\小程序js模板语法\\src\\app.ts'], {});
+    //   console.log('---')
+    // },4000)
     // `createWatchProgram` creates an initial program, watches files, and updates
     // the program over time.
     // ts.createWatchProgram(host);

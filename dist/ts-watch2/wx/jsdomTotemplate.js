@@ -14,11 +14,11 @@ exports.default = (function (data) {
     var wxml = '';
     function createWxml(element) {
         element.forEach(function (value) {
-            var label = FormatLabel(value.label);
-            if (label == 'text' && value.isCreate == false) {
-                wxml += value.text;
+            if (!value.label) {
+                wxml += value;
                 return;
             }
+            var label = FormatLabel(value.label);
             wxml += '<' + label;
             var attr = value.attr || {};
             var data = value.data || {};

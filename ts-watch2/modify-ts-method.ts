@@ -2,9 +2,9 @@
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
-import parse from './parse'
 import { isFiles } from './tool'
-import creationWx from './wx/creation-wx';
+import creationWx from './wx/white';
+import creationWeb from './web/white'
 import { setSystemDataAttr } from '../global.config'
 let Style_Plugin: Function[] = [];
 let Template_Plugin: Function[] = [];
@@ -39,67 +39,36 @@ function splitFile(fileName: string, content: string) {
   return content;
 }
 
-function getFinalResults(type: string, value: string,fileName?:string){
+export function getFinalResults(type: string, value: string,fileName?:string){
 
     const plugin: Function[] = type == 'template'? Template_Plugin : Style_Plugin;
 
     let __value: string = value;
 
     plugin.forEach(data => {
-        __value = data(__value,path.dirname(fileName))
+        __value = data(__value,fileName)
     })
 
     return __value;
 
 }
 
-export function writeFile(fileName: string, fd: any, data: string) {
-  fd = fs.openSync(fileName, "w");
 
-  fs.writeSync(fd, data||'', /*position*/ undefined, "utf8");
-  return fd;
-}
 ts.sys.writeFile = function(fileName: string, data: any, writeByteOrderMark: any) {
       // If a BOM is required, emit one
       if (writeByteOrderMark) {
           // data = byteOrderMarkIndicator + data;
       }
-      var fd,fd_wxml, fd_wxss, fd_json;
-      const url = path.dirname(fileName);
-      const _Name = path.basename(fileName,'.js');
+
  
+    //   const wxData: any = Render_Plugin ? Render_Plugin(data, parse(data)): creationWx(data, parse(data));
+      if(process.argv.indexOf('--wx') != -1){
+        creationWx(fileName, data);
+ 
+      }else if(process.argv.indexOf('--web') != -1){
+        creationWeb(fileName, data);
+      }
 
-      const wxData: any = Render_Plugin ? Render_Plugin(data, parse(data)): creationWx(data, parse(data));
-      
-
-      try {
-        fd = writeFile(fileName, fd, wxData.js);
-        if(wxData.wxml) {
-            fd_wxml = writeFile(path.join(url,_Name+'.wxml'),fd_wxml,getFinalResults('template',wxData.wxml.replace(/{{(.+?)\|(.+?)}}/g, function(a:string,b:string,c:string){
-                const fun = c.split(':');
-                return `{{${fun.shift()}(${b}${fun.length?',':''}${fun.join(',')})}}`
-              }),fileName))
-        }
-        if(wxData.wxss) fd_wxss = writeFile(path.join(url,_Name+'.wxss'),fd_wxss,getFinalResults('style',wxData.wxss,fileName))
-        if(wxData.json) fd_json = writeFile(path.join(url,_Name+'.json'),fd_json,wxData.json)  
-      }
-      catch(e){
-        console.log(e)
-      }
-      finally {
-          if (fd !== undefined) {
-              fs.closeSync(fd);
-          }
-          if (fd_wxml !== undefined) {
-              fs.closeSync(fd_wxml);
-          }
-          if (fd_wxss !== undefined) {
-              fs.closeSync(fd_wxss);
-          }
-          if (fd_json !== undefined) {
-              fs.closeSync(fd_json);
-          }
-      }
 }
 
 ts.sys.readFile = function(fileName: any, _encoding: any) {

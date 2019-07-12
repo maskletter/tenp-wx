@@ -6,7 +6,8 @@ export interface CommonParams {
     /**
      * 设置元素的传值
      * data: { name: "testName" }
-     * => <view name='{{testName}}'></view>
+     *
+     *  => <view name='{{testName}}'></view>
      */
     data?: {
         [prop: string]: string | number | boolean;
@@ -18,7 +19,8 @@ export interface CommonParams {
     /**
      * 设置元素的data-*属性
      * attr: { name: "testName" }
-     * => <view name='testName'></view>
+     *
+     *  => <view name='testName'></view>
      */
     attr?: {
         [prop: string]: string | number | boolean;
@@ -35,7 +37,8 @@ export interface CommonParams {
     /**
      * 设置元素的catch事件
      * event: { tap: "testTap" }
-     * => <view catchtap='testTap'></view>
+     *
+     *  => <view catchtap='testTap'></view>
      */
     catch?: {
         [prop: string]: string;
@@ -194,10 +197,10 @@ export declare namespace params {
     }
     interface TextParams extends CommonParams {
         text: string;
-        /**
-         * 是否创建为text标签，默认true
-         */
-        isCreate?: boolean;
+    }
+    interface WxsParams extends BlockCommonParams {
+        module: string;
+        src?: string;
     }
     interface ImageParams extends CommonParams {
         src?: string;
@@ -287,7 +290,7 @@ export declare namespace params {
         nodes?: any[] | string;
         space?: string;
     }
-    interface Button extends CommonParams {
+    interface Button extends BlockCommonParams {
         size?: 'default' | 'mini';
         type?: 'primary' | 'default' | 'warn';
         plain?: boolean;
@@ -313,6 +316,7 @@ export declare namespace params {
             error?: string;
             opensetting?: string;
             launchapp?: string;
+            [key: string]: string;
         };
     }
     interface Checkbox extends CommonParams {
@@ -669,8 +673,11 @@ export declare namespace params {
     }
 }
 export declare function Template(params: {
-    name?: string;
+    name: string;
     child?: any[];
+} | {
+    is: string;
+    data?: any;
 }): void;
 export declare function Include(params: {
     src: string;
@@ -682,6 +689,7 @@ export declare function View(params: params.ViewParams): void;
 export declare function ScrollView(params: params.ScrollViewParams): void;
 export declare function Text(params: params.TextParams): void;
 export declare function Image(params: params.ImageParams): void;
+export declare function Wxs(params: params.WxsParams): void;
 export declare function Swiper(params: params.SwiperParams): void;
 export declare function SwiperItem(params: params.SwiperItemParams): void;
 export declare function Navigator(params: params.NavigatorParams): void;

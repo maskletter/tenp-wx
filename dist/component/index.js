@@ -14,6 +14,8 @@ function Text(params) { }
 exports.Text = Text;
 function Image(params) { }
 exports.Image = Image;
+function Wxs(params) { }
+exports.Wxs = Wxs;
 function Swiper(params) { }
 exports.Swiper = Swiper;
 function SwiperItem(params) { }

@@ -117,11 +117,16 @@ export const Input = function(defaultValue?: any): any {
 	
 }
 
+
+export const Wxml = function(defaultValue?: any): any {
+	
+}
+
 export const Watch = function(option: { type?: 'get'|'set', name: string }): any {
 
 }
 
-export const Filter = function(): any{
+export const Filter = function(name: string): any{
 
 }
 

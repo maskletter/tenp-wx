@@ -289,7 +289,7 @@ export namespace params{
         nodes?: any[]|string
         space?: string
     }
-    export interface Button extends CommonParams{
+    export interface Button extends BlockCommonParams{
         size?: 'default'|'mini'
         type?: 'primary'|'default'|'warn'
         plain?: boolean
@@ -315,6 +315,7 @@ export namespace params{
             error?: string
             opensetting?: string
             launchapp?: string
+            [key: string]: string
         }
     }
     export interface Checkbox extends CommonParams{
@@ -673,7 +674,7 @@ export namespace params{
     }
 }
 
-export function Template(params: { name?: string, child?: any[] }){}
+export function Template(params: { name: string, child?: any[] }| { is: string, data?: any }){}
 export function Include(params: { src: string }){}
 export function Import(params: { src: string }){}
 export function View(params: params.ViewParams){}

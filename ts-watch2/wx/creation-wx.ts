@@ -1,4 +1,5 @@
 
+import * as path from 'path'
 import jsdomTotemplate from './jsdomTotemplate'
 import { Keyword_Proto, Component_Event, toValueFunction } from '../../global.config'
 
@@ -66,15 +67,45 @@ export default (content: string, data: any[]) => {
     }
 }
 
+//判断当前组件或者页面是否引用了组件的js
+function hasCurrentComponent(url: string, components: string[]){
+    let is: boolean = false;
+    components.forEach((data: string) => {
+        if(data.indexOf(url) != -1) {
+            is = true;
+        }
+    })
+    return is;
+}
+
+//转换方法内this对象
+function transThis(data: any, propertiesKey: any[], dataKey: string){
+    let b = null;
+    data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function(a:string,b:string,c:number){
+        if(propertiesKey.concat(dataKey).indexOf(b) != -1){
+            return `targetWithLog.${b}${a.substr(-1)}`;
+        }else{ return a; }
+    }).replace(/var[\s](.+?) =[\s]this\b/, (a: string,_b:string) => {
+        b = _b;
+        return a;
+    }).replace(new RegExp('\\b'+b+'.(.+?) =','g'), (a:string,b:string) => {
+        if(dataKey.indexOf(b) != -1){
+            return `targetWithLog.${b}${a.substr(-1)}`;
+        }else{ return a; }
+    })
+    return data;
+}
+
 function createComponent(data: any,tenp: any){
 
     // let template: string = `const ${tenp.name} = { default: getApp().tenp };`+Global_Template;
     let template: string = `const ${tenp.name} = { default: wx.tenp };`+Global_Template;
     let functionValue: any = {};
     let tree: any = [];
-    let wxml: string = '';
-    let config: any = {};
-    let components = {};
+    let config: any = data.find((v: any) => v.type == 'config').value;
+    let wxml: string = config.template||'';
+    let components = config.components||{};
+    let componentsValue = Object.values(components);
     let dataKey: string[] = [], propertiesKey: string[] = [], options: any = '', relations = '';
     data.forEach((value: any) => {
         if(value.type == 'text'){
@@ -82,6 +113,9 @@ function createComponent(data: any,tenp: any){
         }else if(value.type == 'Function'){
             functionValue = value;
         }else if(value.type == 'require'){
+            if(value.value.substr(0,5) != '@tenp' && !hasCurrentComponent(path.basename(value.value), <any>componentsValue)){
+                template += `const ${value.name} = require("${value.value}");`
+            }
             tenp = value.value;
         }else if(value.type == 'config'){
             config = value.value;
@@ -91,8 +125,9 @@ function createComponent(data: any,tenp: any){
             tree = value.value;
         }
     })
+
     
-    
+
     //过滤掉data中options和relations中的参数
     functionValue.data = functionValue.data.filter((v: any) => {
         if(noIsData.indexOf(v.key) == -1) return true
@@ -114,6 +149,7 @@ function createComponent(data: any,tenp: any){
         return `${data.key}: {value:${data.value},type:${data.type}, observer(data){ targetWithLog['${data.key}'] = data;createMethods(this, "${data.key}", data); }}`;
     }).filter((v:string) => v.replace(/\s/g,'')).join(',') + '};';
 
+    
     //获取$this对象并赋值给全局对象
     let ready = functionValue.methods.find(({key}: any) => key == 'ready');
     if(ready){
@@ -122,16 +158,25 @@ function createComponent(data: any,tenp: any){
         functionValue.methods.push({ key: 'ready', value: 'function () {$This=this;}' })
     }
 
-
     //筛选事件方法并添加进去
     let _methods = FormatMethods2('Component', functionValue.methods.map((data: any) => {
+        let b = null;
+        let datas: any[] = propertiesKey.concat(dataKey);
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function(a:string,b:string,c:number){
-            if(propertiesKey.concat(dataKey).indexOf(b) != -1){
+            if(datas.indexOf(b) != -1){
                 return `targetWithLog.${b}${a.substr(-1)}`;
+            }else{ return a; }
+        }).replace(/var[\s](.+?) =[\s]this\b/, (a: string,_b:string) => {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b'+b+'.(.+?)\\b','g'), (a:string,b:string) => {
+            if(datas.indexOf(b) != -1){
+                return "targetWithLog." + b;
             }else{ return a; }
         })
         return data;
     }));
+
 
     //添加监听事件
     const _watch = functionValue.watch.map((data: any) => {
@@ -171,7 +216,7 @@ function createComponent(data: any,tenp: any){
         wxml: tree.length ? jsdomTotemplate(tree) : wxml,
         wxss: config.style,
         js: template,
-        json: ClearOtherConfig(['style','template','components','templateStr'],config)
+        json: ClearOtherConfig(['style','template','components'],config)
     }
 
 }
@@ -181,9 +226,10 @@ function createPage(data: any,tenp:any){
     let template: string = `const ${tenp.name} = { default: wx.tenp };`+Global_Template;
     let functionValue: any = {};
     let tree: any = [];
-    let wxml: string = '';
-    let config: any = {};
-    let components = {};
+    let config: any = data.find((v: any) => v.type == 'config').value;
+    let wxml: string = config.template||'';
+    let components = config.components||{};
+    let componentsValue = Object.values(components);
     let dataKey: string[] = [];
     
     data.forEach((value: any) => {
@@ -192,11 +238,14 @@ function createPage(data: any,tenp:any){
         }else if(value.type == 'Function'){
             functionValue = value;
         }else if(value.type == 'require'){
+            if(value.value.substr(0,5) != '@tenp' && !hasCurrentComponent(path.basename(value.value), <any>componentsValue)){
+                template += `const ${value.name} = require("${value.value}");`
+            }
             tenp = value.value;
         }else if(value.type == 'config'){
-            config = value.value;
-            wxml = value.value.template;
-            components = config.components||{};
+            // config = value.value;
+            // wxml = value.value.template;
+            // components = config.components||{};
         }else if(value.type == 'tree'){
             tree = value.value;
         }
@@ -218,9 +267,18 @@ function createPage(data: any,tenp:any){
         functionValue.methods.push({ key: 'onLoad', value: 'function () {$This=this;}' })
     }
 
+
     //筛选事件方法并添加进去
     let _methods = FormatMethods2('Page', functionValue.methods.map((data: any) => {
+        let b = null;
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function(a:string,b:string,c:number){
+            if(dataKey.indexOf(b) != -1){
+                return `targetWithLog.${b}${a.substr(-1)}`;
+            }else{ return a; }
+        }).replace(/var[\s](.+?) =[\s]this\b/, (a: string,_b:string) => {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b'+b+'.(.+?) =','g'), (a:string,b:string) => {
             if(dataKey.indexOf(b) != -1){
                 return `targetWithLog.${b}${a.substr(-1)}`;
             }else{ return a; }
@@ -251,7 +309,7 @@ function createPage(data: any,tenp:any){
         wxml: tree.length ? jsdomTotemplate(tree) : wxml,
         wxss: config.style,
         js: template,
-        json: ClearOtherConfig(['style','template','components','templateStr'],config)
+        json: ClearOtherConfig(['style','template','components'],config)
     }
 
 }
@@ -269,6 +327,9 @@ function createApp(data: any, tenp:any){
         }else if(value.type == 'Function'){
             functionValue = value;
         }else if(value.type == 'require'){
+            if(value.value.substr(0,5) != '@tenp'){
+                template += `const ${value.name} = require("${value.value}");`
+            }
             tenp = value.value;
         }else if(value.type == 'config'){
             config = value.value;
@@ -295,7 +356,15 @@ function createApp(data: any, tenp:any){
 
     //筛选事件方法并添加进去
     let _methods = FormatMethods2('App', functionValue.methods.map((data: any) => {
+        let b = null;
         data.value = data.value.replace(/\bthis.(.+?)[.|)|,|\[\]|(|\s|;]/g, function(a:string,b:string,c:number){
+            if(dataKey.indexOf(b) != -1){
+                return `targetWithLog.${b}${a.substr(-1)}`;
+            }else{ return a; }
+        }).replace(/var[\s](.+?) =[\s]this\b/, (a: string,_b:string) => {
+            b = _b;
+            return a;
+        }).replace(new RegExp('\\b'+b+'.(.+?) =','g'), (a:string,b:string) => {
             if(dataKey.indexOf(b) != -1){
                 return `targetWithLog.${b}${a.substr(-1)}`;
             }else{ return a; }

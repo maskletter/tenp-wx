@@ -99,9 +99,11 @@ export declare class WxPage {
 export declare const Page: (config: tenp.PageConfig) => any;
 export declare const App: (config: tenp.AppConfig) => any;
 export declare const Input: (defaultValue?: any) => any;
+export declare const Wxml: (defaultValue?: any) => any;
 export declare const Watch: (option: {
     type?: "get" | "set";
     name: string;
 }) => any;
+export declare const Filter: (name: string) => any;
 export declare const ImgToBase64: (src: string) => any;
 export default tenp;

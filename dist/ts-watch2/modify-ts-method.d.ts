@@ -1,1 +1,1 @@
-export declare function writeFile(fileName: string, fd: any, data: string): any;
+export declare function getFinalResults(type: string, value: string, fileName?: string): string;

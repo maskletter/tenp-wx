@@ -10,7 +10,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/weixin-app": "^2.2.27",
-    "@tenp/wx": "^0.0.16"
+    "@tenp/wx": "^0.0.19"
   },
   "dependencies": {
     "typescript": "^3.5.1",
