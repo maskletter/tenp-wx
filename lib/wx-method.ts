@@ -605,7 +605,7 @@ exports.previewImage = function (data) {
 exports.getImageInfo = function (data) {
     return new Promise(function (resolve, reject) {
         wx.getImageInfo({
-            url: data.url,
+            src: data.src,
             success: function (result) {
                 resolve(result);
             },
