@@ -22,7 +22,7 @@ function run(){
 
     switch (argv[0]) {
       case 'serve':
-        spawn('node', ['node_modules/@tenp/wx/dist/ts-watch2/server.js'], {
+        spawn('node', ['node_modules/@tenp/wx/dist/ts-watch2/server.js --wx'], {
             cwd: process.cwd(),
             stdio: 'inherit',
             shell: true, 
