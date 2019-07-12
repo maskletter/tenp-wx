@@ -31,6 +31,14 @@ function run(){
       case 'init':
         require('./init.js')(argv.slice(1, argv.length)[0])
         break;
+      case 'email':
+        if(process.platform === "win32"){
+          execSync('start mailto:maskletter@outlook.com')
+        }else{
+          execSync('open mailto:maskletter@outlook.com')
+        }
+        process.exit()
+        break;;
       case 'v':
       case 'i':
       case 'V':
