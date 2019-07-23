@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var interface_1 = require("./lib/interface");
+var wx_method_1 = require("../lib/wx-method");
 exports.Component = function (config) {
     return function (target) {
     };
 };
-var WxComponent = /** @class */ (function () {
+var WxComponent = (function () {
     function WxComponent() {
     }
     return WxComponent;
 }());
 exports.WxComponent = WxComponent;
-var WxPage = /** @class */ (function () {
+var WxPage = (function () {
     function WxPage() {
     }
     return WxPage;
@@ -23,7 +23,7 @@ exports.Page = function (config) {
 };
 exports.App = function (config) {
 };
-exports.Input = function (defaultValue) {
+exports.Prop = function (defaultValue) {
 };
 exports.Wxml = function (defaultValue) {
 };
@@ -33,4 +33,5 @@ exports.Filter = function (name) {
 };
 exports.ImgToBase64 = function (src) {
 };
-exports.default = interface_1.default;
+exports.default = wx_method_1.default;
+//# sourceMappingURL=index.js.map

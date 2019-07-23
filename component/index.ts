@@ -674,6 +674,7 @@ export namespace params{
     }
 }
 
+export function Block(params: BlockCommonParams){}
 export function Template(params: { name: string, child?: any[] }| { is: string, data?: any }){}
 export function Include(params: { src: string }){}
 export function Import(params: { src: string }){}

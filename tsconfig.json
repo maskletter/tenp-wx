@@ -1,47 +1,37 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "declaration": true,
-      "baseUrl": "src",
-      "sourceMap": false,
-      "noErrorTruncation": true,
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "strict": true,
-      "alwaysStrict": false,
-      "strictNullChecks": false,
-      "noImplicitUseStrict": false,
-      "noImplicitAny": true,
-      "allowSyntheticDefaultImports": false,
-      "strictPropertyInitialization": false,
-      "target": "es5",
-      "rootDir": ".",
-      "outDir": "./dist",
-      "watch": true,
-      "typeRoots": [
-        "./node_modules/@types",
-        "./types"
-      ],
-      "lib": [
-        "es2016",
-        "dom"
-      ]
-    },
-    "files": [
-      "./global.config.ts",
-      "./index.ts",
-      "./lib/interface.ts",
-      "./ts-watch2/wx/creation-wx.ts",
-      "./ts-watch2/wx/white.ts",
-      "./ts-watch2/wx/jsdomTotemplate.ts",
-      "./ts-watch2/web/creation-wx.ts",
-      "./ts-watch2/web/white.ts",
-      "./ts-watch2/modify-ts-method.ts",
-      "./ts-watch2/parse.ts",
-      "./ts-watch2/server.ts",
-      "./ts-watch2/tool.ts",
-      "./ts-watch2/watch-assets.ts",
-      "./component/index.ts"
+  "compileOnSave": false,
+  "compilerOptions": {
+    "declaration": true,
+    "baseUrl": "src",
+    "sourceMap": true,
+    "noErrorTruncation": true,
+    "allowJs": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": true,
+    "strict": true,
+    "alwaysStrict": false,
+    "noEmitOnError": false,
+    "strictNullChecks": false,
+    "noImplicitUseStrict": false,
+    "noImplicitAny": true, 
+    "allowSyntheticDefaultImports": false,
+    "strictPropertyInitialization": false,
+    "target": "es5",
+    "rootDir":"./src",      
+    "outDir":"./dist",     
+    "watch":true,             
+    "typeRoots": [
+      "node_modules/@types", "./types"
+    ],
+    "lib": [
+      "es2016",
+      "dom",
+      "es2018.promise"
     ]
-  }
+  },
+  "include": [
+    "./src/**/*", "./types/*"
+  ]
+}
