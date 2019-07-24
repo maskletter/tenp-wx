@@ -1,20 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tool_1 = require("./tool");
 var acorn = require('acorn');
 var path = require('path');
 var escodegen = require('escodegen');
 var Final_System_Attr = ['attr', 'data', 'event', 'catch'];
-var Final_System_attrData = {
-    Map: ['markers', 'covers', 'polyline', 'circles', 'controls', 'includePoints', 'polygons']
-};
-var wtsConfig = (function () {
-    try {
-        return require(path.join(process.cwd(), 'wts.config.js'));
-    }
-    catch (e) {
-        return {};
-    }
-}());
+var Final_System_attrData = new Map([
+    ['Map', ['markers', 'covers', 'polyline', 'circles', 'controls', 'includePoints', 'polygons']]
+].concat(tool_1.default.attrData));
 function parse(content) {
     var parseContent = acorn.parse(content);
     var packageName = '';
@@ -28,7 +21,7 @@ function parse(content) {
         if (split.length == 2) {
         }
         else {
-            tree.push({ type: 'ExpressionStatement', value: "let " + packageName + " = {};" });
+            tree.push({ type: 'ExpressionStatement', value: "let " + packageName + " = {}" });
         }
     }
     parseContent.body.forEach(function (data) {
@@ -106,7 +99,7 @@ function parse(content) {
                     }
                 });
                 var value = { methods: methods_1, decorators: decorators_1, config: config_1, data: parent_data_1, render: treeArray_1 };
-                wtsConfig.tree && wtsConfig.tree(type_1, value);
+                tool_1.default.tree(type_1, value);
                 tree.push({
                     type: 'main',
                     value: value
@@ -133,7 +126,7 @@ function readRenderTransTemplate(render, treeArray) {
         var _treeArray = { __labelName: label };
         data.arguments[0] && data.arguments[0].properties.forEach(function (_d1) {
             if (_d1.key.name != "child") {
-                if (Final_System_attrData[label] && Final_System_attrData[label].indexOf(_d1.key.name) != -1) {
+                if (Final_System_attrData.get(label) && Final_System_attrData.get(label).indexOf(_d1.key.name) != -1) {
                     _treeArray[_d1.key.name] = '{{' + escodegen.generate(_d1.value).replace(/[\r\n]/g, '') + '}}';
                 }
                 else if (_d1.value.raw) {
@@ -167,7 +160,7 @@ function createApp(type, _a, rootDir) {
     var methods = _a.methods, decorators = _a.decorators, properties = _a.properties, config = _a.config, data = _a.data, render = _a.render;
     var template = type + "({data:{" + createData(data) + "}, " + distributionMethods(type, { methods: methods, properties: properties, decorators: decorators, config: config, data: data, render: render }) + " });";
     template = template.replace('$data$', data);
-    var css = wtsConfig.style && config.style ? wtsConfig.style(config.style, rootDir) : config.style ? config.style : '';
+    var css = tool_1.default.style && config.style ? tool_1.default.style(config.style, rootDir) : config.style ? config.style : '';
     var wxml = renderTransTemplate(render) || config.template || '';
     var json = formatJson(type, config);
     return {
@@ -190,8 +183,8 @@ function distributionMethods(type, _a) {
     var template = '';
     var method = ['properties', 'data', 'pageLifetimes', 'lifetimes', 'behaviors', 'relations'];
     function transMethod(key, content) {
-        if (wtsConfig.method && method.indexOf(key) == -1)
-            return wtsConfig.method(key, { content: content, properties: properties, data: data });
+        if (method.indexOf(key) == -1)
+            return tool_1.default.method(key, { content: content, properties: properties, data: data });
         else
             return content;
     }
@@ -216,7 +209,7 @@ function formatJson(type, config) {
     if (type == 'Component') {
         config.component = true;
     }
-    wtsConfig.json && wtsConfig.json(type, config);
+    tool_1.default.json(type, config);
     return config;
 }
 var wx_key = ['if', 'for', 'key', 'forIndex', 'forItem'];
@@ -297,7 +290,7 @@ exports.default = (function (content, rootDir) {
         else if (data.type == 'tenp') {
             tenpKey = data.value;
             if (createType == 'App') {
-                template += "const " + data.value + " = {default:require(\"./method.js\")};wx.tenp = " + data.value + ".default;wx.Watch = require(\"./logHandler.js\");";
+                template += "const " + data.value + " = require(\"./method.js\");wx.tenp = " + data.value + ".default;wx.Watch = require(\"./logHandler.js\");";
             }
             else {
                 template += "const " + data.value + " = { default: wx.tenp };";
@@ -316,7 +309,7 @@ exports.default = (function (content, rootDir) {
     }
     var allComponents = Object.assign({}, saveAppComponents, (json.usingComponents || {}));
     for (var data in allComponents) {
-        template = template.replace(new RegExp("require\\('(.+?)" + path.basename(allComponents[data]) + "'\\)"), '{}');
+        template = template.replace(new RegExp("require\\('([A-Za-z0-9./]+)" + path.basename(allComponents[data]) + "'\\)"), '{}');
     }
     return { js: template, css: css, wxml: wxml, json: JSON.stringify(json) };
 });

@@ -9,8 +9,7 @@ var rootUrl = path.join(cwd, 'assets');
 var srcUrl = path.join(cwd, 'src');
 var distUrl = path.join(cwd, 'dist');
 mkdirsSync(distUrl);
-fs.copyFileSync(path.join(__dirname, '../bin/method.js'), path.join(distUrl, 'method.js'));
-fs.copyFileSync(path.join(__dirname, '../bin/logHandler.js'), path.join(distUrl, 'logHandler.js'));
+fs.copyFileSync(path.join(__dirname, '../lib/wx-method.js'), path.join(distUrl, 'method.js'));
 var watcher = chokidar.watch(srcUrl, {
     ignored: /^(\s|\S)+(tsx|jsx|scss)+$/,
     persistent: true

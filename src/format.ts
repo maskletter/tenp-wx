@@ -1,19 +1,15 @@
 
+import wtsConfig from './tool'
 const acorn = require('acorn');
 const path = require('path');
 const escodegen = require('escodegen');
 const Final_System_Attr: any = ['attr','data','event','catch'];
-let Final_System_attrData: any = {
-	Map: ['markers','covers','polyline','circles','controls','includePoints','polygons']
-}
+let  Final_System_attrData: Map<string, string[]> = new Map([
+	['Map',['markers','covers','polyline','circles','controls','includePoints','polygons']],
+	...wtsConfig.attrData
+])
 
-const wtsConfig = (function(){
-	try{
-		return require(path.join(process.cwd(), 'wts.config.js'))
-	}catch(e){
-		return {}
-	}
-}())
+
 
 function parse(content: string){
 
@@ -33,7 +29,7 @@ function parse(content: string){
 		if(split.length == 2){
 			
 		}else{
-			tree.push({ type: 'ExpressionStatement', value: `let ${packageName} = {};` })
+			tree.push({ type: 'ExpressionStatement', value: `let ${packageName} = {}` })
 		}
 	}
 	parseContent.body.forEach((data: any) => {
@@ -117,7 +113,7 @@ function parse(content: string){
 				})
 				const value = { methods, decorators, config, data: parent_data, render: treeArray };
 
-				wtsConfig.tree && wtsConfig.tree(type, value)
+				wtsConfig.tree(type, value)
 				tree.push({
 					type: 'main',
 					value: value
@@ -148,7 +144,7 @@ function readRenderTransTemplate(render: any = [], treeArray: any = []){
                 
                 if(_d1.key.name != "child"){
 					
-					if(Final_System_attrData[label]&&Final_System_attrData[label].indexOf(_d1.key.name) != -1){
+					if(Final_System_attrData.get(label)&&Final_System_attrData.get(label).indexOf(_d1.key.name) != -1){
 						_treeArray[_d1.key.name] = '{{'+escodegen.generate(_d1.value).replace(/[\r\n]/g,'')+'}}';
 					}else if(_d1.value.raw){
                         _treeArray[_d1.key.name||_d1.key.value] = _d1.value.value;
@@ -215,7 +211,7 @@ function distributionMethods(type: string, { methods, properties, decorators, co
 	let template = '';
 	let method = ['properties','data','pageLifetimes', 'lifetimes','behaviors', 'relations']
 	function transMethod(key: string, content: string){
-		if(wtsConfig.method && method.indexOf(key) == -1)
+		if(method.indexOf(key) == -1)
 			return wtsConfig.method(key, {content, properties:properties, data})
 		else
 			return content;
@@ -244,7 +240,7 @@ function formatJson(type: any, config: any){
 	if(type == 'Component'){
 		config.component = true;
 	}
-	wtsConfig.json && wtsConfig.json(type, config);
+	wtsConfig.json(type, config);
 	return config;
 }
 
@@ -337,7 +333,7 @@ export default  (content: string, rootDir: string) => {
 		}else if(data.type == 'tenp'){
 			tenpKey = data.value;
 			if(createType == 'App'){
-				template += `const ${data.value} = {default:require("./method.js")};wx.tenp = ${data.value}.default;wx.Watch = require("./logHandler.js");`	
+				template += `const ${data.value} = require("./method.js");wx.tenp = ${data.value}.default;wx.Watch = require("./logHandler.js");`	
 			}else{
 				template += `const ${data.value} = { default: wx.tenp };`
 			}
@@ -361,7 +357,7 @@ export default  (content: string, rootDir: string) => {
 	
 	// if(createType == 'Page') console.log(allComponents)
 	for(let data in allComponents){
-		template = template.replace(new RegExp(`require\\('(.+?)${path.basename(allComponents[data])}'\\)`), '{}')
+		template = template.replace(new RegExp(`require\\('([A-Za-z0-9./]+)${path.basename(allComponents[data])}'\\)`), '{}')
 	}
 		
 	

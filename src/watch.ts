@@ -12,8 +12,8 @@ const distUrl: string = path.join(cwd,'dist');
 
 
 mkdirsSync(distUrl);
-fs.copyFileSync(path.join(__dirname,'../bin/method.js'), path.join(distUrl, 'method.js'))
-fs.copyFileSync(path.join(__dirname,'../bin/logHandler.js'), path.join(distUrl, 'logHandler.js'))
+fs.copyFileSync(path.join(__dirname,'../lib/wx-method.js'), path.join(distUrl, 'method.js'))
+// fs.copyFileSync(path.join(__dirname,'../bin/logHandler.js'), path.join(distUrl, 'logHandler.js'))
 
 
 const watcher = chokidar.watch(srcUrl, {

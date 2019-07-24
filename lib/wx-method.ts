@@ -235,6 +235,7 @@ namespace tenp {
 		return new Set(Object.getOwnPropertyNames(Array.prototype).concat(Object.getOwnPropertyNames(Object.prototype)));
 	}())
     export const watch = ($this: any): void => {
+        let systemWatchEvent =  $this.systemWatchEvent();
         let obj = Object.assign({}, $this.data);
         let objValue: any = {};
         let time: any = null;
@@ -244,8 +245,8 @@ namespace tenp {
             }
             Object.defineProperty($this.data, name, {
                 get(){
-                    if($this.systemWatchEvent[name]){
-                        $this[$this.systemWatchEvent[name]]({ type: 'get' })
+                    if(systemWatchEvent[name]){
+                        $this[systemWatchEvent[name]]({ type: 'get' })
                     }
                     return obj[name]
                 },
@@ -257,8 +258,8 @@ namespace tenp {
                         for(var name in objValue){
                             num[name] = objValue[name].value;
                         }
-                        if($this.systemWatchEvent[name]){
-                            $this[$this.systemWatchEvent[name]]({ type: 'set', value: value })
+                        if(systemWatchEvent[name]){
+                            $this[systemWatchEvent[name]]({ type: 'set', value: value })
                         }
                         $this.setData(num)
                         objValue = {};
@@ -266,13 +267,19 @@ namespace tenp {
                     objValue[name] =  {
                         value: value
                     }
-                    obj[name] = value
+                    if(typeof(value) == 'object'){
+                        obj[name] = watchProxy($this, value, name, obj, [name]);
+                    }else{
+                        obj[name] = value
+                    }
+                    
                 }
             })	
         })
     }
 
     export const watchProxy = ($this: any, obj: any, parentName: string, firstObj: any, firstNameMap: any[] = []) => {
+        let systemWatchEvent = $this.systemWatchEvent();
         let objValue: any = {};
         let time: any = null;
 
@@ -291,7 +298,7 @@ namespace tenp {
             get(target, name: string){
                 if(PrototypeKeys.has(name)) return target[name];
                 let formatName = isNaN(<any>name) ? `.${name}` : `[${name}]`;
-                let watch = $this.systemWatchEvent[firstName+dataUrl+formatName];
+                let watch = systemWatchEvent[firstName+dataUrl+formatName];
                 if(watch){
                     $this[watch]({ type: 'get' })
                 }
@@ -307,7 +314,7 @@ namespace tenp {
                     time = setTimeout(function(){
                         let num: any = {};
                         for(var name in objValue){
-                            let watch = $this.systemWatchEvent[firstName+dataUrl+__keys];
+                            let watch = systemWatchEvent[firstName+dataUrl+__keys];
                             if(watch){
                                 $this[watch]({ type: 'set', value: objValue[name].value })
                             }
@@ -321,7 +328,11 @@ namespace tenp {
                     }
                 }
                 
-                obj[prop] = value;
+                if(typeof(obj[prop]) == 'object'){
+                    obj[prop] = watchProxy($this, obj[prop], prop, obj, firstNameMap.concat([prop]))
+                }else{
+                    obj[prop] = value;
+                }
                 return true;
             }
         })
