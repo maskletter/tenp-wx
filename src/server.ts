@@ -4,6 +4,7 @@ import * as path from 'path';
 import format from './format';
 import './watch';
 import { watchFiles } from './watch';
+import { setDirectory } from './include-modules'
 
 
 function whiteFile(fileName: string, data: string){
@@ -133,6 +134,7 @@ function reportDiagnostic(diagnostic: ts.Diagnostic) {
  * This is mainly for messages like "Starting compilation" or "Compilation completed".
  */
 function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
+  setDirectory();
   console.info(ts.formatDiagnostic(diagnostic, formatHost));
 }
 

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tool_1 = require("./tool");
+var include_modules_1 = require("./include-modules");
 var acorn = require('acorn');
 var path = require('path');
 var escodegen = require('escodegen');
@@ -285,7 +286,7 @@ exports.default = (function (content, rootDir) {
             createType = data;
         }
         else if (data.type == 'ExpressionStatement') {
-            template += data.value + ';';
+            template += include_modules_1.default(data.value, rootDir) + ';';
         }
         else if (data.type == 'tenp') {
             tenpKey = data.value;

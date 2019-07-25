@@ -1,5 +1,6 @@
 
 import wtsConfig from './tool'
+import includeModules from './include-modules'
 const acorn = require('acorn');
 const path = require('path');
 const escodegen = require('escodegen');
@@ -329,7 +330,7 @@ export default  (content: string, rootDir: string) => {
 		if(typeof(data) == 'string'){
 			createType = data;
 		}else if(data.type == 'ExpressionStatement'){
-			template += data.value+';';
+			template += includeModules(data.value, rootDir)+';';
 		}else if(data.type == 'tenp'){
 			tenpKey = data.value;
 			if(createType == 'App'){

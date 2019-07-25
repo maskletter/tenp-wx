@@ -12,9 +12,15 @@ const distUrl: string = path.join(cwd,'dist');
 
 
 mkdirsSync(distUrl);
-fs.copyFileSync(path.join(__dirname,'../lib/wx-method.js'), path.join(distUrl, 'method.js'))
-// fs.copyFileSync(path.join(__dirname,'../bin/logHandler.js'), path.join(distUrl, 'logHandler.js'))
 
+fs.copyFileSync(path.join(__dirname,'../lib/wx-method.js'), path.join(distUrl, 'method.js'))
+
+//判断根目录是否存有tenp_modules目录
+
+mkdirsSync(path.join(distUrl,'tenp_modules'));
+// if(!fs.statSync(path.join(distUrl,'tenp_modules')).isDirectory()){
+
+// }
 
 const watcher = chokidar.watch(srcUrl, {
   // ignored: /^(\s|\S)+(ts|js|tsx|jsx|scss)+$/,

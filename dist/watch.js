@@ -10,6 +10,7 @@ var srcUrl = path.join(cwd, 'src');
 var distUrl = path.join(cwd, 'dist');
 mkdirsSync(distUrl);
 fs.copyFileSync(path.join(__dirname, '../lib/wx-method.js'), path.join(distUrl, 'method.js'));
+mkdirsSync(path.join(distUrl, 'tenp_modules'));
 var watcher = chokidar.watch(srcUrl, {
     ignored: /^(\s|\S)+(tsx|jsx|scss)+$/,
     persistent: true

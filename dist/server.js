@@ -6,6 +6,7 @@ var path = require("path");
 var format_1 = require("./format");
 require("./watch");
 var watch_1 = require("./watch");
+var include_modules_1 = require("./include-modules");
 function whiteFile(fileName, data) {
     var fd;
     try {
@@ -65,6 +66,7 @@ function reportDiagnostic(diagnostic) {
     console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine()));
 }
 function reportWatchStatusChanged(diagnostic) {
+    include_modules_1.setDirectory();
     console.info(ts.formatDiagnostic(diagnostic, formatHost));
 }
 watchMain();
