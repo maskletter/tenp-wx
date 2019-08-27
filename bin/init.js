@@ -56,28 +56,43 @@ function installDependencies( url, callback) {
 }
 
 //初始化创建程序
-function InitProject(name){
+async function InitProject(name, awaitInput){
 
 	const str_path = path.join(cwd,name);
 	
 	if(isDirectory(str_path)) 
-		return console.log(' $error: 项目目录已存在');
+		return console.log(' $error: 文件夹已存在');
 	
-	CopyFiles(str_path, function(){
-		installDependencies(str_path, function(){
-			console.log('下载npm包完成')
-			console.log('$ cd '+name)
-			console.log('$ wts serve');
-			process.exit();
+	const appid = await awaitInput('请输入项目appid:');
+	const title = await awaitInput('请输入项目名:');
+	if(!appid || !title){
+		console.log(' $error 请输入完整信息\r\n');
+		await InitProject(name, awaitInput);
+	}else{
+		CopyFiles(str_path, function(){
+			const configUrl = path.join(process.cwd(),name,'src','project.config.json');
+			const config = JSON.parse(fs.readFileSync(configUrl,'utf-8'));
+			config.appid = appid;
+			config.description = title;
+			config.projectname = title;
+			fs.writeFileSync(configUrl,JSON.stringify(config,null,2))
+			installDependencies(str_path, function(){
+				console.log('下载npm包完成')
+				console.log('$ cd '+name)
+				console.log('$ wts serve');
+				process.exit();
+			})
 		})
-	})
+	}
+	
+	
 	
 
 
 }
 // InitProject('test-projeect');
-module.exports = function(name){
+module.exports = function(name, awaitInput){
 	
-	InitProject(name);
+	InitProject(name, awaitInput);
 
 }

@@ -1,0 +1,17 @@
+
+{
+	"rules": {
+		"no-any": true,
+		"no-var-requires": false,
+		"no-var-keyword": true,
+		"increment-decrement": true,
+		"no-empty-interface":true,
+		"no-non-null-assertion": true,
+		"no-empty": true,
+		"no-eval": true,
+		"no-for-in-array": true,
+		"no-implicit-dependencies": [false,"dev","src","reptile"],
+		"switch-default": true,
+		"one-variable-per-declaration": true
+	}
+}

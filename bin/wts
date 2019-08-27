@@ -12,24 +12,96 @@ var pack = require('../package.json');
 const { spawn } = require('child_process')
 const argv = process.argv.slice(2, process.argv.length);
 const readline = require('readline');
+const fs = require('fs');
+const path = require('path')
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
+const config = (function(){
+  try{
+    return require('./config')
+  }catch(e){
+    writeCofnigFile({ open: true });
+    return { open: true };
+  }
+}())
+function writeCofnigFile(json){
+  fs.writeFileSync(path.join(__dirname,'config.js'), 'module.exports = '+JSON.stringify(json)+';')
+}
 
-function run(){
+function awaitInput(question){
+  return new Promise(resolve => {
+    rl.question(question, (answer) => {
+        // console.log('Thank you for you valuable feedback: ' + answer);
+        // rl.close();
+        resolve(answer);
+    });
+  })
+    
+}
+
+async function DetectionWxTool(){
+  if(config.wxToolUrl) return ;
+  const result = await awaitInput('请输入微信开发者工具安装目录: ');
+  if(fs.existsSync(path.join(result, 'wechatdevtools.exe'))){
+    config.wxToolUrl = result;
+    writeCofnigFile(config);
+  }else{
+     console.log('\x1B[31m $error  输入的开发者工具路径错误\x1B[39m'); 
+     await DetectionWxTool();
+  }
+}
+
+function findArgv(name){
+  if(argv.indexOf(name) != -1){
+    return argv[argv.indexOf(name)+1];
+  } 
+}
+function setConfig(argv){
+  if(findArgv('--wxurl')){
+    config.wxToolUrl = findArgv('--wxurl');
+  }
+  if(findArgv('--open')){
+    config.open = findArgv('--open');
+  }
+  writeCofnigFile(config);
+  if(argv.indexOf('--show') != -1){
+    console.log(config)
+  }
+}
+
+
+async function run(){
   try {
 
+    await DetectionWxTool();
+    // const result = await awaitInput('请输入微信开发者工具安装目录: ');
+    // console.log(result)
+
+    
     switch (argv[0]) {
       case 'serve':
-        spawn('node', ['node_modules/@tenp/wx/dist/ts-watch2/server.js --wx'], {
+        // spawn('node', ['node_modules/@tenp/wx/dist/server', '--wxurl', config.wxToolUrl], {
+        let open = '';
+        if(argv.indexOf('--open') == -1){
+          open = '--open '+config.open;
+        }else{
+          open = '--open '+(findArgv('--open')||'true')
+        }
+        
+        spawn('node', ['node_modules/@tenp/wx/dist/server', '--wxurl', config.wxToolUrl.replace(/ /g,'tenp_nbsp'), open], {
             cwd: process.cwd(),
             stdio: 'inherit',
             shell: true, 
         });
         break;
+      case 'config':
+        setConfig(argv);
+        process.exit();
+        break;
       case 'init':
-        require('./init.js')(argv.slice(1, argv.length)[0])
+        require('./init.js')(argv.slice(1, argv.length)[0], awaitInput)
         break;
       case 'email':
         if(process.platform === "win32"){

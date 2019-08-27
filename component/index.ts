@@ -33,8 +33,8 @@ export interface CommonParams{
      * => <view bindtap='testTap'></view>
      */
     event?: {
-        tap?: string
-        [prop: string]: string
+        tap?: string|Function
+        [prop: string]: string|Function
     }
     /**
      * 设置元素的catch事件
@@ -49,6 +49,8 @@ export interface CommonParams{
      * 设置元素的if属性
      */
     if?: string
+    elif?: string
+    else?: null
     /**
      * 设置元素的for循环
      */
@@ -65,6 +67,7 @@ export interface CommonParams{
      * 设置元素for循环的key
      */
     key?: string
+    hidden?: string|boolean
 }
 
 export interface BlockCommonParams extends CommonParams{
@@ -156,7 +159,7 @@ export namespace MapInterface {
 }
 export namespace params{
     export interface ViewParams extends BlockCommonParams{
-    
+        slot?: string
     }
     export interface ScrollViewParams extends BlockCommonParams{
         scrollX?: boolean
@@ -379,6 +382,7 @@ export namespace params{
     }
     export interface Label extends BlockCommonParams{
         for?: string
+        text?: string
     }
     export interface Picker extends BlockCommonParams{
         mode?: 'selector'|'multiSelector'|'time'|'date'|'region'
@@ -674,7 +678,9 @@ export namespace params{
     }
 }
 
+export function Block(params: BlockCommonParams){}
 export function Template(params: { name: string, child?: any[] }| { is: string, data?: any }){}
+export function Slot(params?: { name?: string, [prop: string]: string }){}
 export function Include(params: { src: string }){}
 export function Import(params: { src: string }){}
 export function View(params: params.ViewParams){}

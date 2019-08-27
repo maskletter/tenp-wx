@@ -1,6 +1,6 @@
 {
   "name": "@tenp/wx",
-  "version": "0.0.32",
+  "version": "0.0.31",
   "description": "",
   "main": "dist/index.js",
   "scripts": {

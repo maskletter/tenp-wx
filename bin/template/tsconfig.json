@@ -12,6 +12,7 @@
       "removeComments": true,
       "strict": true,
       "alwaysStrict": false,
+      "noEmitOnError": false,
       "strictNullChecks": false,
       "noImplicitUseStrict": false,
       "noImplicitAny": true, 

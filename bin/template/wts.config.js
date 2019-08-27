@@ -3,6 +3,27 @@ const sass = require('node-sass');
 
 module.exports = {
 
+    attrData: [
+        ['Numk',['Hello,World']]
+    ],
+
+    /**
+     * 修改json文件
+     */
+    json: function(type, data){
+        
+        if(type == 'Page'){
+            if(!data.navigationBarBackgroundColor){
+                data.navigationBarBackgroundColor = 'white'
+            }
+            if(!data.navigationBarTextStyle){
+                data.navigationBarTextStyle = 'black'
+            }
+        }
+        
+    },
+
+
     /**
      * 此方法可以修改style(Function|Function[])
      * 返回值为string,
@@ -14,26 +35,17 @@ module.exports = {
             data: style, 
             includePaths: [filepath],
             outputStyle: 'compressed'
-        }).css.toString();
+        }).css.toString()
+            .replace(/\b(\d+?)px/g, function(a,b){ return Number(b*2.1)+'rpx' })
+            .replace(/\b(\d+?)dpx/g, function(a,b){ return b+'px' });
     },
 
-    /**
-     * 此方法可以修改template，(Function|Function[])
-     * 返回值为string
-     * @param {修改} template 
-     */
-    // template: function(template){
-    //     return template
-    // },
-
-    /**
-     * template为返回的ts转换之后的js文件，parse为返回的经过修改的ast树
-     * 此方法会覆盖掉系统自带的生成微信小程序代码的程序，可以用来创建其他版本代码
-     * @param {*} template 
-     * @param {*} parse 
-     */
-    // parse: function(template, parse){
-    //     console.log(parse)
-    // }
+    xml: function(type, content){
+        // console.log(type)
+        if(type == 'Page' && !content.match(/navigation-title-border/g)){
+            content = '<view class="navigation-title-border"></view>'+content
+        }
+        return content
+    }
 
 }
