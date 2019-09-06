@@ -330,7 +330,8 @@ async function runEachFunction(list: Function[], res: any){
             oldValue[path] = objectTostr(_value)
             if (typeof (_value) == 'object') __data[key] = watchCore(dep, $this, _value, $parent.concat([key]))
             __data[key] = _value;
-            $this.setData({ [path]: _value }) 
+            $this.data[path] = _value;
+            $this.setData && $this.setData({ [path]: _value }) 
           },
           get() {
             return __data[key]
@@ -351,6 +352,10 @@ async function runEachFunction(list: Function[], res: any){
             params.methods.watch = function () {
               watchCore(dep, this, this.data, []);
             }
+            params.methods.$set = function(prop: any, value: any){
+              this.setData({ [prop]: value })
+              // dep.watch(this, prop, value)
+            }
           }else{
             params = { ...methods, ...params };
             params.watch = function(){
@@ -358,7 +363,7 @@ async function runEachFunction(list: Function[], res: any){
             }
             params.$set = function(prop: any, value: any){
               this.setData({ [prop]: value })
-              dep.watch(this, prop, value)
+              // dep.watch(this, prop, value)
             }
           }
 
@@ -1015,38 +1020,50 @@ async function runEachFunction(list: Function[], res: any){
      * @param request 
      * @version 0.0.0 
      */
-    export const request = (create: CreateRequest = {}) => {
-        let transformRequest: Function[] = create.transformRequest||[];
-        let transformResponse: Function[] = create.transformResponse||[];
-        let transformError: Function[] = create.transformError||[];
-        //设置默认base
-        let baseUrl: string = create.baseUrl||'';
-        //设置默认header
-        let header: wx.RequestHeader = create.header||{};
-        //设置默认请求方式
-        let method: any = create.method||'POST';
-
-        return (params: RequestConfig): Promise<any> => {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    wx.request({
-                        url: baseUrl+params.url,
-                        method: params.method || method,
-                        data: transformRequest.length?await runEachFunction(transformRequest, params.data||{}):params.data,
-                        header: { ...header, ...params.header },
-                        success(res: any){
-                            resolve(transformResponse.length?runEachFunction(transformResponse, res): res)
-                        },
-                        fail(error: any){
-                            reject(transformError.length?runEachFunction(transformError, error):error);
-                        }
-                    })
-                } catch (error) {
-                    reject(error)
+    export const request = (optios: wx.RequestOptions) => {
+        return new Promise((resolve, reject) => {
+            wx.request({
+                ...optios,
+                success(res: any){
+                    resolve(res)
+                },
+                fail(error: any){
+                    reject(error);
                 }
-                
             })
-        }
+        })
+        
+        // let transformRequest: Function[] = create.transformRequest||[];
+        // let transformResponse: Function[] = create.transformResponse||[];
+        // let transformError: Function[] = create.transformError||[];
+        // //设置默认base
+        // let baseUrl: string = create.baseUrl||'';
+        // //设置默认header
+        // let header: wx.RequestHeader = create.header||{};
+        // //设置默认请求方式
+        // let method: any = create.method||'POST';
+
+        // return (params: RequestConfig): Promise<any> => {
+        //     return new Promise(async (resolve, reject) => {
+        //         try {
+        //             wx.request({
+        //                 url: baseUrl+params.url,
+        //                 method: params.method || method,
+        //                 data: transformRequest.length?await runEachFunction(transformRequest, params.data||{}):params.data,
+        //                 header: { ...header, ...params.header },
+        //                 success(res: any){
+        //                     resolve(transformResponse.length?runEachFunction(transformResponse, res): res)
+        //                 },
+        //                 fail(error: any){
+        //                     reject(transformError.length?runEachFunction(transformError, error):error);
+        //                 }
+        //             })
+        //         } catch (error) {
+        //             reject(error)
+        //         }
+                
+        //     })
+        // }
     }
 
     /**
@@ -1058,8 +1075,8 @@ async function runEachFunction(list: Function[], res: any){
     /**
      * [wx.removeStorage](https://developers.weixin.qq.com/miniprogram/dev/api/storage/wx.removeStorage.html) 的同步版本
      */
-    export const removeStorageSyncSync = (key: string) => {
-        (wx as any).removeStorageSyncSync(key)
+    export const removeStorageSync = (key: string) => {
+        (wx as any).removeStorageSync(key)
     }
     /**
      * [wx.getStorage]() 的同步版本
@@ -2661,7 +2678,7 @@ async function runEachFunction(list: Function[], res: any){
      * 
      * @version 1.4.0
      */
-    export const createSelectorQuery = (): wx.SelectorQuery => {
+    export const createSelectorQuery = (): wx.SelectorQuery & { in: any } => {
         return wx.createSelectorQuery()
     }
     /**

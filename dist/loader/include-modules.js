@@ -17,6 +17,7 @@ var stream_1 = require("stream");
 var browserify = require('browserify');
 var fs = require("fs");
 var path = require("path");
+/**打包npm中的 模块 */
 var directoryMaps = new Set();
 var modulesMap = new Map();
 var cwd = process.cwd();
@@ -26,6 +27,7 @@ function resolve(url, dir, dir2) {
     else
         return path.join(url, dir);
 }
+//读取文件夹中的文件
 exports.getDirectoryContent = function (url, rootDir) {
     var data = fs.readdirSync(url);
     data = data.map(function (v) {
@@ -33,6 +35,9 @@ exports.getDirectoryContent = function (url, rootDir) {
         if (stats.isDirectory())
             return v;
         else {
+            /**
+             * 如果文件名为xx.xx.ts，删除最后一个文件拓展名
+             */
             var map = v.split('.');
             map.pop();
             return map.join('.');
@@ -45,7 +50,7 @@ exports.setDirectory = function (directory) {
 };
 function createStream() {
     var buf = [];
-    var TenpDuplex = (function (_super) {
+    var TenpDuplex = /** @class */ (function (_super) {
         __extends(TenpDuplex, _super);
         function TenpDuplex(options) {
             return _super.call(this, options) || this;
@@ -107,10 +112,12 @@ exports.default = (function (str, rootDir) {
         }
         else {
             var l = rootDir.replace(rootl, '').split('\\');
+            // l.shift();
             var moduleStr = l.map(function (v) { return '../'; }).join('');
             var modulesLibName = lib.replace(/\//g, '_') + "_tenp_modules.js";
             if (!modulesMap.get(libName)) {
                 console.log(str, modulesLibName, libName);
+                // buildModules(str, modulesLibName, libName);
             }
             if (moduleStr)
                 return "var " + libName + " = require('" + (moduleStr + 'tenp_modules/' + modulesLibName) + "')";

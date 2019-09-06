@@ -73,6 +73,7 @@ function parse(content) {
                     if (data.type == 'BlockStatement')
                         return;
                     if (data.type == 'FunctionDeclaration') {
+                        //读取data参数
                         parent_data_1 = data.body.body.map(function (_a) {
                             var expression = _a.expression;
                             if (!expression)
@@ -81,21 +82,25 @@ function parse(content) {
                         }).filter(function (v) { return v; });
                     }
                     else if (data.expression && data.expression.right && data.expression.right.type == 'FunctionExpression') {
+                        //读取方法
                         methods_1.push({
                             key: data.expression.left.property.name,
                             method: escodegen.generate(data.expression.right)
                         });
                     }
                     else if (data.expression && data.expression.callee && data.expression.callee.name == '__decorate') {
+                        //读取装饰器
                         var _a = data.expression.arguments, decorator = _a[0], main = _a[1], key = _a[2];
                         decorators_1.push({
                             type: decorator.elements[0].callee.property.name,
                             params: decorator.elements[0].arguments.length ? escodegen.generate(decorator.elements[0].arguments[0]) : '',
                             method: key.value,
+                            // valueType: 'String'
                             valueType: decorator.elements[1].arguments[1].name
                         });
                     }
                     else if (data.expression && data.expression.left && data.expression.left.name == packageName) {
+                        //读取config
                         var $config = data.expression.right.arguments[0].elements[0];
                         var render = $config.arguments[0].properties.find(function (v) { return v.key.name == 'render'; }) || { value: { elements: [] } };
                         $config.arguments[0].properties = $config.arguments[0].properties.filter(function (v) { return v.key.name != 'render'; });
@@ -211,6 +216,7 @@ function distributionMethods(type, _a) {
     });
     return template;
 }
+//格式化json对象
 function formatJson(type, config) {
     delete config.style;
     if (type == 'Component') {
@@ -221,9 +227,11 @@ function formatJson(type, config) {
 }
 var wx_key = ['if', 'for', 'key', 'forIndex', 'forItem'];
 var system_key = ['attr', 'data', 'event', 'catch', 'child'];
+//将标签转为小写(TestLabel=>test-lable)
 function FormatLabel(name) {
     return name.replace(/[A-Z]/g, function (a, b, c, d) { return (b == 0 ? '' : '-') + a.toLocaleLowerCase(); });
 }
+//将render转为wxml
 function renderTransTemplate(render) {
     var wxml = '';
     function qE(str) {
@@ -243,6 +251,7 @@ function renderTransTemplate(render) {
             var event = value.event || {};
             var catchs = value.catch || {};
             for (var key in attr) {
+                // wxml += ' '+key+'="'+attr[key]+'"'
                 wxml += ' data-' + key + '="' + attr[key] + '"';
             }
             for (var key in data) {
@@ -278,8 +287,11 @@ function renderTransTemplate(render) {
     createWxml(render);
     return wxml;
 }
+//存储app.js里的component组件
 var saveAppComponents = {};
 exports.default = (function (content, rootDir) {
+    // console.log(content)
+    // parse(content)
     var element = parse(content);
     var createType = '';
     var template = '';
@@ -315,9 +327,12 @@ exports.default = (function (content, rootDir) {
         saveAppComponents = json.usingComponents;
     }
     var allComponents = Object.assign({}, saveAppComponents, (json.usingComponents || {}));
+    // if(createType == 'Page') console.log(allComponents)
     for (var data in allComponents) {
         template = template.replace(new RegExp("require\\('(.+?)" + path.basename(allComponents[data]) + "'\\)"), '{}');
     }
     return { js: template, css: css, wxml: wxml, json: JSON.stringify(json) };
 });
+// module.exports = function(content: string, rootDir: string){
+// }
 //# sourceMappingURL=format.js.map

@@ -1,6 +1,7 @@
 
 
 export interface CommonParams{
+    slot?: string
     /**设置元素的id */
     id?: string
     /**设置元素的class */
@@ -43,7 +44,7 @@ export interface CommonParams{
      *  => <view catchtap='testTap'></view>
      */
     catch?: {
-        [prop: string]: string
+        [prop: string]: string|Function
     }
     /**
      * 设置元素的if属性
@@ -162,8 +163,8 @@ export namespace params{
         slot?: string
     }
     export interface ScrollViewParams extends BlockCommonParams{
-        scrollX?: boolean
-        scrollY?: boolean
+        scrollX?: boolean|string
+        scrollY?: boolean|string
         upperThreshold?: number|string
         lowerThreshold?: number|string
         scrollTop?: number|string
@@ -312,13 +313,13 @@ export namespace params{
         appParameter?: string
         showMessageCard?: boolean
         event?: {
-            getuserinfo?:string
-            contact?: string
-            getphonenumber?: string
-            error?: string
-            opensetting?: string
-            launchapp?: string
-            [key: string]: string
+            getuserinfo?:string|Function
+            contact?: string|Function
+            getphonenumber?: string|Function
+            error?: string|Function
+            opensetting?: string|Function
+            launchapp?: string|Function
+            [key: string]: string|Function
         }
     }
     export interface Checkbox extends CommonParams{

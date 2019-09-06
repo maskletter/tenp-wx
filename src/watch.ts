@@ -2,7 +2,7 @@
 import * as path from 'path';
 import * as chokidar from 'chokidar';
 import * as fs from 'fs';
-
+import { findArgv, getDirectoryContent } from './tool';
 
 export let watchFiles: Set<string> = new Set();
 
@@ -14,7 +14,14 @@ const distUrl: string = path.join(cwd,'dist');
 
 mkdirsSync(distUrl);
 mkdirsSync(path.join(distUrl,'tenp_modules'));
-fs.copyFileSync(path.join(__dirname,'../lib/wx-method.js'), path.join(distUrl, 'method.js'))
+const ProjectType: string = <string>findArgv('--type')||'wx';
+fs.copyFileSync(path.join(__dirname,'./assets/'+ProjectType+'/wx-method.js'), path.join(distUrl, 'method.js'))
+
+const configFiles: Set<string> = getDirectoryContent(path.join(process.cwd(), 'config/'+ProjectType), true);
+Array.from(configFiles).forEach((data: string) => {
+	fs.copyFileSync(path.join(path.join(process.cwd(), 'config/'+ProjectType+'/'+data)), path.join(distUrl, data));
+})
+
 
 const watcher = chokidar.watch(srcUrl, {
   // ignored: /^(\s|\S)+(ts|js|tsx|jsx|scss)+$/,

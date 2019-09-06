@@ -30,10 +30,11 @@ var path = require("path");
 var fs = require("fs");
 var tool_1 = require("../../tool");
 var stream_1 = require("stream");
+var Terser = require("terser");
 var browserify = require('browserify');
+// declare const browserify: any;
 var server_1 = require("../../server");
 var Final_System_Attr = ['attr', 'data', 'event', 'catch'];
-var Terser = require("terser");
 var modulesMap = new Map();
 var wtsConfig = (function () {
     try {
@@ -47,11 +48,11 @@ var AppConfigComponent = [];
 var Final_System_attrData = new Map([
     ['Map', ['markers', 'covers', 'polyline', 'circles', 'controls', 'includePoints', 'polygons']],
 ]);
-var ComponentSetMethod = ['$$externalClasses', '$$observers', '$$relations', '$$behaviors', '$$options'];
+var ComponentSetMethod = ['$$externalClasses', '$$relations', '$$behaviors', '$$options'];
 var FormatMethod = new Map([
     ["App", null],
     ["Page", null],
-    ["Component", ComponentSetMethod.concat(['lifetimes', 'properties', 'attached', 'detached', 'created', 'attached', 'ready', 'moved', 'detached', 'error', 'pageLifetimes', 'show', 'hide', 'resize'])],
+    ["Component", ComponentSetMethod.concat(['lifetimes', 'properties', 'observers', 'attached', 'detached', 'created', 'attached', 'ready', 'moved', 'detached', 'error', 'pageLifetimes', 'show', 'hide', 'resize'])],
 ]);
 var FormatMethodMerge = {
     Component: {
@@ -69,7 +70,7 @@ var DecoratorSort = new Map([
 var MainFloder = tool_1.getDirectoryContent(path.join(tool_1.cwd, 'src'));
 function createStream() {
     var buf = [];
-    var TenpDuplex = (function (_super) {
+    var TenpDuplex = /** @class */ (function (_super) {
         __extends(TenpDuplex, _super);
         function TenpDuplex(options) {
             return _super.call(this, options) || this;
@@ -104,10 +105,11 @@ function buildModules(str, modulesLibName, libName) {
     });
     tt.on('end', function () {
         var content = 'const TenpModule = module;' + buff;
-        var result  = Terser.minify(content);
-        if(result.error){
-            console.error(' $UglifyJS error ',result.error)
-        }else{
+        var result = Terser.minify(content);
+        if (result.error) {
+            console.error(' $UglifyJS error ', result.error);
+        }
+        else {
             content = result.code;
         }
         fs.writeFileSync(path.join(tool_1.cwd, './dist/tenp_modules/' + modulesLibName), content);
@@ -115,7 +117,6 @@ function buildModules(str, modulesLibName, libName) {
     });
     modulesMap.set(libName, modulesLibName);
 }
-
 function parse(content, options) {
     if (!content)
         return {
@@ -161,6 +162,7 @@ function parse(content, options) {
             }
             else if (declaration.id.name == packageName) {
                 tree.push({ type: 'null' });
+                //读取class
                 page = readPage(declaration.init.callee.body.body, packageName);
             }
             else
@@ -194,6 +196,7 @@ var readPage = function (body, packageName) {
         }
         else if (value.type == 'ExpressionStatement' && value.expression && value.expression.operator == '=') {
             if (value.expression.left && value.expression.left.object) {
+                // fromatMethods(value.expression.right, Object.keys(data))
                 methods[value.expression.left.property.name] = escodegen.generate(value.expression.right);
             }
             else if (value.expression.left && value.expression.left.name == packageName) {
@@ -296,9 +299,11 @@ function readRenderTransTemplate(methods, render, treeArray) {
 }
 var wx_key = ['if', 'for', 'key', 'forIndex', 'forItem', 'else', 'elif'];
 var system_key = ['attr', 'data', 'event', 'catch', 'child'];
+//将标签转为小写(TestLabel=>test-lable)
 function FormatLabel(name) {
     return name.replace(/[A-Z]/g, function (a, b, c, d) { return (b == 0 ? '' : '-') + a.toLocaleLowerCase(); });
 }
+//将render转为wxml
 function renderTransTemplate(render) {
     var wxml = '';
     function qE(str) {
@@ -309,6 +314,7 @@ function renderTransTemplate(render) {
             return str;
         }
     }
+    // console.log(JSON.stringify(render))
     function createWxml(element) {
         element.forEach(function (value) {
             if (!value.__labelName) {
@@ -323,6 +329,7 @@ function renderTransTemplate(render) {
             var event = value.event || {};
             var catchs = value.catch || {};
             for (var key in attr) {
+                // wxml += ' '+key+'="'+attr[key]+'"'
                 wxml += ' data-' + key + '="' + qE(attr[key]) + '"';
             }
             for (var key in data) {
@@ -356,8 +363,10 @@ function renderTransTemplate(render) {
     }
     ;
     createWxml(render);
+    // console.log(wxml)
     return wxml;
 }
+//将方法中的this.xx 转换成this.setData({xx:xx})
 function _formatMethodData(method, data) {
     if (!method.replace)
         return method;
@@ -407,20 +416,25 @@ function _formatMethodData(method, data) {
         }
     });
 }
+//FormatMethodMerge
 function formatMethodsPosition(methods, page, fileName) {
+    // _formatMethodData(methods, page)
     var properties = page.methods ? Object.keys(page.methods.properties || {}) : [];
     var data = Object.keys(page.data).concat(properties);
     var rootParam = FormatMethod.get(page.type);
     var classification = FormatMethodMerge[page.type];
     var __me = {};
     for (var key in methods) {
-        var method = _formatMethodData(methods[key], data);
+        /**
+            有可能ast不存在expression或者更换成了其他属性，
+        */
+        var method = _formatMethodData(methods[key], data); //.expression ?  _formatMethodData(methods[key], data) : methods[key]
         if (rootParam && rootParam.indexOf(key) == -1) {
             var own = classification[key];
             var isOwn = own ? own : 'methods';
             if (!__me[isOwn])
                 __me[isOwn] = {};
-            __me[isOwn][key] = method;
+            __me[isOwn][key] = typeof method == 'object' ? JSON.stringify(method) : method;
         }
         else {
             __me[key.replace(/\$\$/, '')] = method;
@@ -445,8 +459,11 @@ function formatMethodsPosition(methods, page, fileName) {
 function FormatDecorator(page, modules, options) {
     page.decorator.forEach(function (data) {
         if (DecoratorSort.get('Browser')[data.name]) {
+            //浏览器级别
         }
         else {
+            //系统级别
+            // console.log(require('@tenp/wx'))
             var requireName_1 = data.run.split('.')[0];
             var lib = modules.find(function (v) { return v.key == requireName_1; });
             if (!lib) {
@@ -476,19 +493,20 @@ function FormatRequire(modules, page, fileName, buildDirectoryUrl, usingComponen
         var reuqireUrl = '';
         if (urlMaps[0][0] == '.') {
             reuqireUrl = urlMaps.join('/');
-        }else{
+        }
+        else {
             var f = fileName.replace(path.join(tool_1.cwd, 'dist/'), '').split('\\');
             f.shift();
-            if(MainFloder.has(urlMaps[0])){
-                reuqireUrl = f.map(function (v) { return '../'; }).join('') + data.value;    
-            }else{
+            if (MainFloder.has(urlMaps[0])) {
+                reuqireUrl = f.map(function (v) { return '../'; }).join('') + data.value;
+            }
+            else {
                 var modulesLibName = urlMaps[0] + '_tenp_modules.js';
-                if(!modulesMap.get(data.key)){
+                if (!modulesMap.get(data.key)) {
                     buildModules("const " + data.key + " = require(\"" + data.value + "\");", modulesLibName, data.key);
                 }
-                reuqireUrl = f.map(function (v) { return '../'; }).join('')+'tenp_modules/'+modulesLibName
+                reuqireUrl = f.map(function (v) { return '../'; }).join('') + 'tenp_modules/' + modulesLibName;
             }
-            
         }
         if (reuqireUrl[0] != '.')
             reuqireUrl = './' + reuqireUrl;
@@ -497,14 +515,18 @@ function FormatRequire(modules, page, fileName, buildDirectoryUrl, usingComponen
         else
             return "require('" + reuqireUrl + "');";
     }
+    var isInitApp = false;
+    var isInitOther = false;
     modules.forEach(function (data) {
         if (usingComponents.indexOf(data.value.split('/').pop()) != -1)
             return;
         if (data.value.substr(0, 8) == '@tenp/wx') {
-            if (page.type == 'App') {
-                str += "const tenp = require(\"./method.js\");const " + data.key + " = {default: tenp};wx.tenp = " + data.key + ".default;";
+            if (page.type == 'App' && !isInitApp) {
+                isInitApp = true;
+                str += "const tenp = require(\"./method.js\");\n\t\t\t\t\t\tconst " + data.key + " = {default: tenp};\n\t\t\t\t\t\twx.tenp = " + data.key + ".default;\n\t\t\t\t\t\twx.process = {\n\t\t\t\t\t\t\tenv: {\n\t\t\t\t\t\t\t\ttype:\"" + (tool_1.findArgv('--type') || 'wx') + "\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t};\n\t\t\t\t\t\tconst process = wx.process;";
             }
-            else {
+            else if (!isInitOther) {
+                isInitOther = true;
                 str += "const " + data.key + " = { default: wx.tenp };";
             }
         }
@@ -542,7 +564,11 @@ exports.default = (function (content, options) {
         AppConfigComponent = Object.values(usingComponents || {});
     }
     else if (page.type == 'Component') {
+        jsTemplate = 'const process = wx.process;' + jsTemplate;
         page.config.component = true;
+    }
+    else {
+        jsTemplate = 'const process = wx.process;' + jsTemplate;
     }
     if (page.config.style) {
         cssTemplate = wtsConfig.style ? wtsConfig.style(page.config.style, options.srcDirectoryUrl) : wtsConfig.style;

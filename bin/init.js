@@ -65,15 +65,16 @@ async function InitProject(name, awaitInput){
 	
 	const appid = await awaitInput('请输入项目appid:');
 	const title = await awaitInput('请输入项目名:');
+	const description = await awaitInput('请输入项目描述:')
 	if(!appid || !title){
 		console.log(' $error 请输入完整信息\r\n');
 		await InitProject(name, awaitInput);
 	}else{
 		CopyFiles(str_path, function(){
-			const configUrl = path.join(process.cwd(),name,'src','project.config.json');
+			const configUrl = path.join(process.cwd(),name,'config/wx','project.config.json');
 			const config = JSON.parse(fs.readFileSync(configUrl,'utf-8'));
 			config.appid = appid;
-			config.description = title;
+			config.description = description;
 			config.projectname = title;
 			fs.writeFileSync(configUrl,JSON.stringify(config,null,2))
 			installDependencies(str_path, function(){

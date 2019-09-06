@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var path = require("path");
 var chokidar = require("chokidar");
 var fs = require("fs");
+var tool_1 = require("./tool");
 exports.watchFiles = new Set();
 var cwd = process.cwd();
 var rootUrl = path.join(cwd, 'assets');
@@ -10,8 +11,14 @@ var srcUrl = path.join(cwd, 'src');
 var distUrl = path.join(cwd, 'dist');
 mkdirsSync(distUrl);
 mkdirsSync(path.join(distUrl, 'tenp_modules'));
-fs.copyFileSync(path.join(__dirname, '../lib/wx-method.js'), path.join(distUrl, 'method.js'));
+var ProjectType = tool_1.findArgv('--type') || 'wx';
+fs.copyFileSync(path.join(__dirname, './assets/' + ProjectType + '/wx-method.js'), path.join(distUrl, 'method.js'));
+var configFiles = tool_1.getDirectoryContent(path.join(process.cwd(), 'config/' + ProjectType), true);
+Array.from(configFiles).forEach(function (data) {
+    fs.copyFileSync(path.join(path.join(process.cwd(), 'config/' + ProjectType + '/' + data)), path.join(distUrl, data));
+});
 var watcher = chokidar.watch(srcUrl, {
+    // ignored: /^(\s|\S)+(ts|js|tsx|jsx|scss)+$/,
     ignored: /^(\s|\S)+(tsx|jsx|scss)+$/,
     persistent: true
 });

@@ -78,7 +78,9 @@ function readFile(fileName, _encoding) {
     var buffer = fs.readFileSync(fileName);
     var len = buffer.length;
     if (len >= 2 && buffer[0] === 0xFE && buffer[1] === 0xFF) {
-        len &= ~1;
+        // Big endian UTF-16 byte order mark detected. Since big endian is not supported by node.js,
+        // flip all byte pairs and treat as little endian.
+        len &= ~1; // Round down to a multiple of 2
         for (var i = 0; i < len; i += 2) {
             var temp = buffer[i];
             buffer[i] = buffer[i + 1];
@@ -87,9 +89,11 @@ function readFile(fileName, _encoding) {
         buffer = buffer.toString("utf16le", 2);
     }
     if (len >= 2 && buffer[0] === 0xFF && buffer[1] === 0xFE) {
+        // Little endian UTF-16 byte order mark detected
         buffer = buffer.toString("utf16le", 2);
     }
     if (len >= 3 && buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+        // UTF-8 byte order mark detected
         buffer = buffer.toString("utf8", 3);
     }
     buffer = buffer.toString("utf8");
@@ -102,13 +106,17 @@ function readFile(fileName, _encoding) {
     }
     buffer.replace(/@(.+?)\(([\s\S]+?)export default class (.+?)(\{|\extends|implements)/g, function (a, b, c, d) {
         exports.methodAssociation.set(path.normalize(fileName), { type: b, name: d.trim() });
+        // packageName = d;
         return '';
     });
+    // Default is UTF-8 with no byte order mark
     return buffer;
 }
 ts.sys.readFile = readFile;
 var writeFile = function (fileName, data, writeByteOrderMark) {
+    // If a BOM is required, emit one
     if (writeByteOrderMark) {
+        // data = byteOrderMarkIndicator + data;
     }
     var fileUrl = path.normalize(fileName);
     var relativeUrl = fileUrl.replace(ConversionPath, '');
@@ -126,6 +134,7 @@ var writeFile = function (fileName, data, writeByteOrderMark) {
         return;
     }
     var fileMap = wx_loader_1.default(data, a);
+    // console.log(fileName)
     for (var key in fileMap) {
         fs.writeFileSync(path.join(a.buildDirectoryUrl, (fileMap[key].name || _fileName) + '.' + key), fileMap[key].content);
     }
@@ -137,11 +146,14 @@ var formatHost = {
     getNewLine: function () { return ts.sys.newLine; }
 };
 function watchMain() {
-    var configPath = ts.findConfigFile("./", ts.sys.fileExists, "tsconfig.json");
+    var configPath = ts.findConfigFile(
+    /*searchPath*/ "./", ts.sys.fileExists, "tsconfig.json");
     if (!configPath) {
         throw new Error("Could not find a valid 'tsconfig.json'.");
     }
     var createProgram = ts.createSemanticDiagnosticsBuilderProgram;
+    // Note that there is another overload for `createWatchCompilerHost` that takes
+    // a set of root files.
     var host = ts.createWatchCompilerHost(configPath, {}, __assign({}, ts.sys, { writeFile: writeFile }), createProgram, reportDiagnostic, reportWatchStatusChanged);
     var origCreateProgram = host.createProgram;
     host.createProgram = function (rootNames, options, host, oldProgram) {
@@ -161,25 +173,34 @@ function watchMain() {
     ts.createWatchProgram(host);
 }
 function reportDiagnostic(diagnostic) {
-    if(diagnostic.file)
-        console.error("Error", diagnostic.file.fileName.replace(tool_1.cwd,''), ":", ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine()));
-    else{
-        console.error("Error", ":", ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine()));
-    }
+    var title = diagnostic.file ? diagnostic.file.fileName.replace(tool_1.cwd, '') : '';
+    console.error("Error", title, ":", ts.flattenDiagnosticMessageText(diagnostic.messageText, formatHost.getNewLine()));
 }
+/**
+ * Prints a diagnostic every time the watch status changes.
+ * This is mainly for messages like "Starting compilation" or "Compilation completed".
+ */
 function reportWatchStatusChanged(diagnostic) {
+    // if(diagnostic.messageText.indexOf('Starting') != 0)
+    //   watchFiles.add('init');
     console.info(ts.formatDiagnostic(diagnostic, formatHost));
 }
 watchMain();
+/*---------------------------全局错误监听---------------------------------*/
 process.on('SIGINT', function () {
     closeNode();
 });
 process.on('uncaughtException', function (err) {
+    //打印出错误
     console.log(err);
+    //打印出错误的调用栈方便调试
     console.log(err.stack);
     closeNode();
 });
+/*---------------------------关闭进程---------------------------------*/
 function closeNode() {
+    // console.log()
+    // process_server.kill();
     logMessage('等待系统退出中...');
     if (tool_1.findArgv('--open') == 'true')
         tool_1.closeWxTool(wxToolUrl, path.join(tool_1.cwd, 'dist'));

@@ -13,13 +13,11 @@ import { App } from '@tenp/wx';
             root: '',
             pages: []
         }
-    ]
+    ],
+    sitemapLocation: 'sitemap.json'
 })
 export default class WxApp{
 
-    onShow(){
-        
-    }
 
 }
 

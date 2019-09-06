@@ -2,7 +2,7 @@ import * as acorn from 'acorn'
 import * as escodegen from 'escodegen';
 import * as path from 'path';
 import * as fs from 'fs';
-import { getDirectoryContent, cwd } from '../../tool'
+import { getDirectoryContent, cwd, findArgv } from '../../tool'
 import { Duplex } from 'stream';
 import fromatMethods from './format-data'
 var Terser = require("terser");
@@ -23,11 +23,11 @@ let  Final_System_attrData: Map<string, string[]> = new Map([
 	['Map',['markers','covers','polyline','circles','controls','includePoints','polygons']],
 	// ...wtsConfig.attrData
 ])
-const ComponentSetMethod: string[] = ['$$externalClasses','$$observers','$$relations','$$behaviors','$$options'];
+const ComponentSetMethod: string[] = ['$$externalClasses','$$relations','$$behaviors','$$options'];
 const FormatMethod: Map<string,Array<string|null>> = new Map([
 	["App",null],
 	["Page",null],
-	["Component",[...ComponentSetMethod,'lifetimes','properties','attached','detached','created','attached','ready','moved','detached','error','pageLifetimes','show','hide','resize']],
+	["Component",[...ComponentSetMethod,'lifetimes','properties','observers','attached','detached','created','attached','ready','moved','detached','error','pageLifetimes','show','hide','resize']],
 ])
 const FormatMethodMerge: any = {
 	Component: {
@@ -419,7 +419,7 @@ function formatMethodsPosition(methods: any, page: any, fileName: string){
 			const own: string = classification[key];
 			const isOwn: string = own ? own : 'methods'
 			if( !__me[isOwn] ) __me[isOwn] = {};
-			__me[isOwn][key] = method
+			__me[isOwn][key] = typeof method == 'object' ? JSON.stringify(method) : method;
 		}else{
 			
 			__me[key.replace(/\$\$/,'')] = method;
@@ -503,13 +503,25 @@ function FormatRequire(modules: any, page: any, fileName: string, buildDirectory
 		else return `require('${reuqireUrl}');`;
 	}
 
+	let isInitApp: boolean = false;
+	let isInitOther: boolean = false;
 	modules.forEach((data: any) => {
 		
 		if(usingComponents.indexOf(data.value.split('/').pop()) != -1) return;
 		if(data.value.substr(0,8) == '@tenp/wx'){
-			if(page.type == 'App'){
-				str += `const tenp = require("./method.js");const ${data.key} = {default: tenp};wx.tenp = ${data.key}.default;` 
-			}else{
+			if(page.type == 'App' && !isInitApp){
+				isInitApp = true;
+				str += `const tenp = require("./method.js");
+						const ${data.key} = {default: tenp};
+						wx.tenp = ${data.key}.default;
+						wx.process = {
+							env: {
+								type:"${findArgv('--type')||'wx'}"
+							}
+						};
+						const process = wx.process;` 
+			}else if(!isInitOther){
+				isInitOther = true;
 				str += `const ${data.key} = { default: wx.tenp };`
 			}
 		}else{
@@ -553,7 +565,10 @@ export default (content: string,options:any) => {
 	if(page.type == 'App'){
 		AppConfigComponent = Object.values(usingComponents||{});
 	}else if(page.type == 'Component'){
+		jsTemplate = 'const process = wx.process;'+jsTemplate;
 		page.config.component = true;
+	}else{
+		jsTemplate = 'const process = wx.process;'+jsTemplate;
 	}
 
 	if(page.config.style) {

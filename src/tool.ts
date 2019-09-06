@@ -35,12 +35,13 @@ export const mkdirsSync = function(dirname: string) {
 } 
 
 //读取文件夹中的文件
-export const getDirectoryContent = (url: string, rootDir?: string): Set<string> => {
+export const getDirectoryContent = (url: string, suffix?: boolean): Set<string> => {
     let data = fs.readdirSync(url);
     data = data.map((v: string) => {
         let stats = fs.statSync(path.join(url,v));
         if(stats.isDirectory()) return v;
         else {
+            if(suffix == true) return v;
             const map: string[] = v.split('.');
             map.pop();
             return map.join('.')
@@ -50,7 +51,11 @@ export const getDirectoryContent = (url: string, rootDir?: string): Set<string> 
 }
 
 export function findArgv(name: string): string|boolean{
-    return argv[argv.indexOf(name)+1];
+    if(argv.indexOf(name) == -1){
+        return undefined;
+    }else{
+        return argv[argv.indexOf(name) + 1];
+    }
 }
 
 export function runSpawn(cwd: string){

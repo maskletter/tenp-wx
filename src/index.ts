@@ -1,7 +1,32 @@
 
-import * as tenp from '../lib/wx-method';
+import * as tenp from './assets/wx/wx-method';
+import * as tenpQq from './assets/qq/wx-method';
 import * as fs from 'fs';
 import * as path from 'path';
+function _formatMethodData(method: any, data: any) {
+    if (!method.replace)
+        return method;
+    var thisMap = ['this'];
+    method.replace(/[var|let] (.+?) = this;/g, function (a, b) { thisMap.push(b); });
+    return method.replace(/([$a-zA-Z0-9_]+?)\.(.+?)[.|)|,|\[\]|(|\s|;]/g, function (a, b, c) {
+        if (thisMap.indexOf(b) == -1)
+            return a;
+        if (data.indexOf(c) != -1)
+            return b + ".data." + c + a.substr(-1);
+        else
+            return a;
+    })
+        .replace(/\b([a-z0-9]+?)\.(.+?)\.push\(/, function (a, b, c) {
+        if (thisMap.indexOf(b) == -1)
+            return a;
+        if (data.indexOf(c.split('.')[1]) != -1) {
+            return b + "." + c + ".push(" + b + ",";
+        }
+        else
+            return a;
+    });
+   
+}
 export const Component = function (config: tenp.ComponentConfig): any {
 	return (target: Function) => {
 		
@@ -133,6 +158,13 @@ export const Wxml = function(defaultValue?: any): any {
 export const Watch = function(option: { type?: 'get'|'set', name: string }): any {
 
 }
+export const Watch_Analysis = function (options: any, params: any) {
+    if(!options.page.methods.observers) options.page.methods.observers = {};
+    const data = [...Object.keys(options.page.data), ...(options.page.methods.properties?Object.keys(options.page.methods.properties):[])];
+    options.page.methods.observers[params.data.name] = _formatMethodData(options.page.methods[params.methodName], data)
+    delete options.page.methods[params.methodName];
+ 
+};
 
 export const Filter = function(name: string): any{
 
